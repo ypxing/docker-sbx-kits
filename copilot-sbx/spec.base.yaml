@@ -1,0 +1,21 @@
+schemaVersion: "1"
+kind: agent
+name: copilot-sbx
+displayName: Copilot Agent (GitHub)
+description: GitHub Copilot agent with GITHUB_TOKEN auth and bundled skills/agents.
+
+agent:
+  image: "docker/sandbox-templates:copilot-docker"
+  entrypoint:
+    run: [copilot, "--yolo"]
+
+environment:
+  variables:
+    IS_SANDBOX: "1"
+    SBX_NO_TELEMETRY: "1"
+  proxyManaged:
+    - GITHUB_TOKEN
+
+network:
+  allowedDomains:
+    - "*.github.com"

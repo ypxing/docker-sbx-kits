@@ -1,0 +1,4 @@
+.env
+.DS_Store
+claude-sbx/spec.yaml
+copilot-sbx/spec.yaml

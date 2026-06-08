@@ -1,0 +1,25 @@
+schemaVersion: "1"
+kind: mixin
+name: npm-auth
+displayName: NPM Registry Auth
+description: Proxy-managed NPM authentication via Bearer token.
+
+network:
+  allowedDomains:
+    - registry.npmjs.org
+  serviceDomains:
+    registry.npmjs.org: npm-registry
+  serviceAuth:
+    npm-registry:
+      headerName: Authorization
+      valueFormat: "Bearer %s"
+
+credentials:
+  sources:
+    npm-registry:
+      env:
+        - NPM_TOKEN
+
+environment:
+  proxyManaged:
+    - NPM_TOKEN

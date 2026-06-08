@@ -1,0 +1,38 @@
+schemaVersion: "1"
+kind: agent
+name: claude-sbx
+displayName: Claude Code (AWS Bedrock)
+description: Claude Code agent with AWS SSO auth, Bedrock routing, and auto-edit permissions.
+
+agent:
+  image: "docker/sandbox-templates:claude-code-docker"
+  entrypoint:
+    run: [claude, "--dangerously-skip-permissions"]
+
+environment:
+  variables:
+    IS_SANDBOX: "1"
+    SBX_NO_TELEMETRY: "1"
+
+network:
+  allowedDomains:
+    - "*.amazonaws.com"
+    - "<YOUR_SSO_SUBDOMAIN>.awsapps.com"
+
+commands:
+  install:
+    - command: |
+        set -euo pipefail
+        ARCH=$(uname -m)
+        case "$ARCH" in
+          x86_64)  URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" ;;
+          aarch64) URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" ;;
+          *) echo "unsupported arch: $ARCH" >&2; exit 1 ;;
+        esac
+        curl -fsSL "$URL" -o /tmp/awscli.zip
+        unzip -q /tmp/awscli.zip -d /tmp/aws-install
+        /tmp/aws-install/aws/install
+        rm -rf /tmp/awscli.zip /tmp/aws-install
+        aws --version
+      user: "0"
+      description: "Install AWS CLI v2"
