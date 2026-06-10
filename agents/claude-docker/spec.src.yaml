@@ -1,0 +1,15 @@
+schemaVersion: "1"
+kind: agent
+name: claude-docker
+displayName: Claude Code
+description: Claude Code agent. Combine with kits for cloud auth and registry access.
+
+agent:
+  image: "docker/sandbox-templates:claude-code-docker"
+  entrypoint:
+    run: [claude]
+
+environment:
+  variables:
+    IS_SANDBOX: "1"
+    SBX_NO_TELEMETRY: "1"

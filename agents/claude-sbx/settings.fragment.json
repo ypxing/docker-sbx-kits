@@ -1,0 +1,56 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "worktree": {
+    "baseRef": "head"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "cols=$(stty size </dev/tty 2>/dev/null | awk '{print $2}'); export COLUMNS=$(( ${cols:-120} > 4 ? ${cols:-120} - 4 : 1 )); exec node \"$HOME/.claude-hud/dist/index.js\""
+  },
+  "extraKnownMarketplaces": {},
+  "teammateMode": "in-process",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(git *)",
+      "Bash(make *)",
+      "Bash(docker compose *)",
+      "Bash(npm info *)"
+    ],
+    "deny": [
+      "Bash(make *deploy*)",
+      "Bash(docker compose *deploy*)",
+      "Bash(git push*)",
+      "Bash(git push *)",
+      "Bash(wget *)",
+      "Bash(aws *)",
+      "Bash(rm -rf *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "fp=$(jq -r '.tool_input.file_path // \"\"' 2>/dev/null); base=$(basename \"$fp\"); if echo \"$base\" | grep -qE '^\\.(env|npmrc|yarnrc)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: reading .env* / .npmrc* / .yarnrc* files is not allowed — use environment variables directly\"}'; exit 0; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command' 2>/dev/null); if echo \"$cmd\" | grep -qE 'make .*(deploy)' || echo \"$cmd\" | grep -qE 'git push' || echo \"$cmd\" | grep -qE '(^|[;&|] *)(sudo )?aws ' || echo \"$cmd\" | grep -qE 'docker compose .*(deploy)' || echo \"$cmd\" | grep -qE '(^|[;&|] *)(sudo )?rm -rf ' || echo \"$cmd\" | grep -qE '(cat|head|tail|less|more|bat|source|\\.) +(\\S*/)*\\.(env|npmrc|yarnrc)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: make *deploy*, git push*, aws *, docker compose *deploy*, rm -rf, reading .env*/.npmrc*/.yarnrc* files\"}'; exit 0; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

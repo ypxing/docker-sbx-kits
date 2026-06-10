@@ -11,7 +11,7 @@ After `sbx run`, the full autonomous workflow is three steps:
 ```
 Step 1 — Plan
   Create issue files in .scratch/*/issues/*.md
-  (manually, or with optional planning skills — see Skills below)
+  (manually, or with planning skills — see Skills below)
 
 Step 2 — Sprint (hands-off)
   > /afk-sprint           ← implements all ready issues in parallel, commits, reviews
@@ -46,24 +46,19 @@ Reusable instructions that guide how the AI approaches a task. Invoked via `/sla
 
 **Bundled (included in this template):**
 
-| Command                | Purpose                                                                      |
-| ---------------------- | ---------------------------------------------------------------------------- |
-| `/afk-sprint`          | Autonomous sprint — implements all `ready-for-agent` issues hands-off        |
-| `/solve-issue`         | Implement one issue end-to-end: explore → TDD → verify → commit              |
-| `/tdd`                 | TDD style guide — shapes failing-test-first approach for the current session |
-| `/address-code-review` | Triage local sprint review findings, implement valid ones with TDD           |
-| `/karpathy-guidelines` | Apply LLM coding pitfall avoidance during writing/review                     |
-
-**Optional (not included — install or write separately):**
-
-| Command                          | Purpose                                                                 |
-| -------------------------------- | ----------------------------------------------------------------------- |
-| `/grill-me`                      | Stress-test a plan or design with relentless questions                  |
-| `/to-prd`                        | Formalise conversation context into a PRD file                          |
-| `/to-issues`                     | Break a PRD into numbered issue files                                   |
-| `/address-pr-comments`           | Fetch external PR review comments, challenge each, implement valid ones |
-| `/grill-with-docs`               | Challenge a plan against your CONTEXT.md and ADRs                       |
-| `/improve-codebase-architecture` | Surface refactoring opportunities informed by your domain model         |
+| Command                          | Purpose                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| `/grill-me`                      | Stress-test a plan or design with relentless questions                       |
+| `/grill-with-docs`               | Challenge a plan against your CONTEXT.md and ADRs                            |
+| `/to-prd`                        | Formalise conversation context into a PRD file                               |
+| `/to-issues`                     | Break a PRD into numbered issue files                                        |
+| `/afk-sprint`                    | Autonomous sprint — implements all `ready-for-agent` issues hands-off        |
+| `/solve-issue`                   | Implement one issue end-to-end: explore → TDD → verify → commit              |
+| `/tdd`                           | TDD style guide — shapes failing-test-first approach for the current session |
+| `/karpathy-guidelines`           | Apply LLM coding pitfall avoidance during writing/review                     |
+| `/address-code-review`           | Triage local sprint review findings, implement valid ones with TDD           |
+| `/address-pr-comments`           | Fetch external PR review comments, challenge each, implement valid ones      |
+| `/improve-codebase-architecture` | Surface refactoring opportunities informed by your domain model              |
 
 ### Agents
 
@@ -101,7 +96,7 @@ Every feature follows the same three phases regardless of platform:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Plan** — Create issue files that describe what to build. Use optional planning skills if installed, or write them manually (see [Issue Tracker Conventions](#issue-tracker-conventions) for the format).
+**Plan** — Create issue files that describe what to build. Use the bundled planning skills (`/grill-me`, `/to-prd`, `/to-issues`) or write them manually (see [Issue Tracker Conventions](#issue-tracker-conventions) for the format).
 
 **Implement** — Either pick issues one by one with `/solve-issue`, or hand them all off to `/afk-sprint` (Claude) or `@afk-sprint` (Copilot) for autonomous implementation.
 
@@ -131,7 +126,7 @@ The fastest path from issues to merged code. You prepare the work, walk away, an
 
 **Step 1 — Prepare issues**
 
-Create issue files in `.scratch/` and mark them `ready-for-agent`. Use `/to-prd` then `/to-issues` if those optional skills are installed, or write the files manually:
+Create issue files in `.scratch/` and mark them `ready-for-agent`. Use `/to-prd` then `/to-issues` (bundled), or write the files manually:
 
 ```markdown
 <!-- .scratch/rate-limiting/issues/01-token-bucket.md -->
@@ -222,7 +217,7 @@ For when you want to stay hands-on through each step:
                    └──────────────┘
 ```
 
-† `/address-pr-comments` is not bundled — install separately if needed.
+† `/address-pr-comments` is bundled in this template.
 
 ```
 > /solve-issue
@@ -427,7 +422,7 @@ Why this issue exists and any relevant background.
 | Handle PR feedback †          | `/address-pr-comments`           | `/address-pr-comments`           |
 | Improve architecture †        | `/improve-codebase-architecture` | `/improve-codebase-architecture` |
 
-† Not bundled in this template — install or write separately.
+† Bundled in this template.
 
 ### Platform comparison
 

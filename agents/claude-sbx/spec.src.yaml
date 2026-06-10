@@ -1,0 +1,15 @@
+schemaVersion: "1"
+kind: agent
+name: claude-sbx
+displayName: Claude Code
+description: Claude Code agent. Combine with kits for cloud auth, registry access, and more.
+
+agent:
+  image: "docker/sandbox-templates:claude-code"
+  entrypoint:
+    run: [claude]
+
+environment:
+  variables:
+    IS_SANDBOX: "1"
+    SBX_NO_TELEMETRY: "1"

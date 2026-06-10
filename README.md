@@ -1,199 +1,75 @@
 # SBX Templates
 
-Sandbox templates for running AI coding agents (Claude Code and GitHub Copilot) in isolated environments with AWS Bedrock routing and optional NPM registry access.
+Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot). Agents provide the base runtime; kits layer in cloud auth, registry access, and settings.
 
-## What this is
-
-Each template is a self-contained agent kit. You point the `sbx` CLI at a kit directory, and it launches a Docker sandbox with your AI agent pre-configured — credentials injected, skills loaded, and a full Plan → Implement → Review workflow ready to go.
+## Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Your machine                                                        │
-│                                                                      │
-│  ┌─────────────────┐     ┌─────────────────────────────────────┐    │
-│  │  .env           │     │  sbx sandbox (Docker)               │    │
-│  │  SSO_SUBDOMAIN  │────►│                                     │    │
-│  │  SSO_REGION     │     │  ┌─────────────────────────────┐   │    │
-│  │  USE_NPM=true   │     │  │  Claude Code / Copilot      │   │    │
-│  └─────────────────┘     │  │                             │   │    │
-│                           │  │  Bundled skills:            │   │    │
-│  ┌─────────────────┐     │  │    /afk-sprint  /tdd        │   │    │
-│  │  setup.sh       │     │  │    /solve-issue  ...        │   │    │
-│  │  (generates     │────►│  │                             │   │    │
-│  │   spec.yaml)    │     │  │                             │   │    │
-│  └─────────────────┘     │  │  Agents:                    │   │    │
-│                           │  │    coder  code-reviewer     │   │    │
-│                           │  └─────────────────────────────┘   │    │
-│                           │                                     │    │
-│                           │  AWS Bedrock  ←── SSO auth         │    │
-│                           │  NPM registry ←── proxy token      │    │
-│                           └─────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────────┘
+agents/
+  claude-docker/            # Claude Code base (no cloud assumptions)
+  copilot-docker/           # GitHub Copilot base
+kits/
+  aws-bedrock-sso/          # AWS SSO auth + Bedrock routing + AWS CLI
+  npm-auth/                 # NPM registry auth
+setup.sh                    # envsubst over all *.tpl files
+sbx-run                     # smart sbx run wrapper
 ```
-
-Once inside the sandbox, the agent follows a **Plan → Implement → Review** lifecycle:
-
-```
-PLAN                      IMPLEMENT                    REVIEW
-──────────────────────    ────────────────────         ───────────────────
-Create .scratch/          /afk-sprint              →   code-reviewer runs
-issues/*.md               (parallel coder agents)  →   /address-code-review
-(or with optional    →    or /solve-issue
- planning skills)         (manual, one issue)
-```
-
-For a team workflow guide with diagrams, see [docs/WORKFLOW.md](docs/WORKFLOW.md).
-For a full reference on skills and agents, see [docs/USAGE.md](docs/USAGE.md).
-
-## Templates
-
-| Directory | Agent | Description |
-|-----------|-------|-------------|
-| `claude-sbx` | Claude Code | AWS SSO + Bedrock routing, parallel coder agents, git worktree isolation |
-| `copilot-sbx` | GitHub Copilot | GitHub token auth, sequential coder agent |
-| `npm-auth` | — | Standalone NPM auth mixin (reference) |
-
-NPM registry auth is included conditionally via `USE_NPM=true` in `.env`.
 
 ## Prerequisites
 
-- **`sbx` CLI** installed and authenticated (ask your platform team for the install link)
-- **AWS SSO access** with a Bedrock-enabled IAM role (Claude template only)
+- **`sbx` CLI** — [Docker Sandbox](https://www.docker.com/products/sandbox/)
+- **`jq`** — `brew install jq`
+- **`envsubst`** — `brew install gettext`
+- **AWS SSO access** with a Bedrock-enabled IAM role (for `aws-bedrock-sso` kit)
 
 ## Quick start
 
 ```bash
-# 1. Clone the repo
-git clone <repo-url> && cd sbx-template
+# 1. Clone and symlink
+git clone <repo-url> ~/sbx-template
+ln -s ~/sbx-template/sbx-run /usr/local/bin/sbx-run
 
-# 2. Create your .env from the template
-cp .env.example .env
+# 2. Configure
+cp ~/sbx-template/.env.example ~/sbx-template/.env
+# edit .env with your SSO values
 
-# 3. Fill in your org's AWS SSO details (edit .env)
-#    Set USE_NPM=true if your projects need private NPM packages
+# 3. Generate config files
+~/sbx-template/setup.sh
 
-# 4. Run setup to generate spec.yaml with your values
-./setup.sh
-
-# 5. Launch a sandbox
-sbx run claude-sbx --kit ./claude-sbx/
-# or
-sbx run copilot-sbx --kit ./copilot-sbx/
+# 4. Run from your project directory
+cd /path/to/project
+sbx-run                                          # claude-docker, no kits
+sbx-run claude-docker --kit aws-bedrock-sso      # with AWS Bedrock
+sbx-run claude-docker --kit aws-bedrock-sso --kit npm-auth
+sbx-run copilot-docker
+sbx-run --list-kits
 ```
 
-## How setup works
+`sbx-run` detects whether a sandbox already exists for the current directory:
+- **First run** — creates sandbox with agent + specified kits
+- **Subsequent runs** — resumes existing sandbox (kits ignored by sbx after create)
 
-The repo ships with placeholder values (`<YOUR_SSO_SUBDOMAIN>`, etc.) in the spec files and `.aws/config`. Each user clones the repo, provides their org values in `.env`, and runs `./setup.sh` to generate a ready-to-use `spec.yaml`.
+In both cases, `settings.fragment.json` files from the agent and all kits are deep-merged and injected as the final kit.
 
-```
-clone → cp .env.example .env → edit .env → ./setup.sh → sbx run
-```
+## .env variables
 
-`setup.sh` does two things:
-1. Picks the right spec variant (`spec.base.yaml` or `spec.npm.yaml`) and copies it to `spec.yaml`
-2. Replaces `<YOUR_...>` placeholders in `claude-sbx/spec.yaml` and `.aws/config` with values from `.env`
+| Variable               | Required | Description                              |
+| ---------------------- | -------- | ---------------------------------------- |
+| `SSO_SUBDOMAIN`        | yes      | AWS SSO subdomain (before `.awsapps.com`) |
+| `SSO_REGION`           | yes      | AWS region                               |
+| `SSO_ROLE_NAME`        | yes      | IAM role name                            |
+| `SSO_ACCOUNT_ID`       | yes      | AWS account ID                           |
+| `BEDROCK_SONNET_MODEL` | no       | Default: `au.anthropic.claude-sonnet-4-6[1m]` |
+| `BEDROCK_OPUS_MODEL`   | no       | Default: `au.anthropic.claude-opus-4-6-v1[1m]` |
+| `BEDROCK_HAIKU_MODEL`  | no       | Default: `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
-The generated `spec.yaml` is git-ignored — each user generates their own locally. Re-running `setup.sh` overwrites it, so put any customisations into `spec.base.yaml` or `spec.npm.yaml` instead.
-
-> **Copilot template:** `setup.sh` copies the spec but does not replace placeholders — the Copilot spec has none. No extra steps needed.
-
-## Repository structure
-
-```
-.
-├── claude-sbx/
-│   ├── spec.base.yaml          # Base spec (no NPM)
-│   ├── spec.npm.yaml           # NPM variant (with registry auth)
-│   ├── spec.yaml               # Generated by setup.sh (git-ignored)
-│   └── files/
-│       ├── home/               # Injected into ~/ inside the sandbox
-│       │   ├── .aws/config     # AWS SSO profile (placeholders replaced by setup.sh)
-│       │   ├── .claude/
-│       │   │   ├── agents/     # coder.md, code-reviewer.md
-│       │   │   ├── skills/     # afk-sprint, tdd, solve-issue, dep-install, ...
-│       │   │   └── settings.json
-│       │   └── .claude-hud/    # Status bar plugin
-│       └── workspace/          # Injected into the project root
-│           └── docs/agents/    # issue-tracker.md, triage-labels.md
-├── copilot-sbx/
-│   ├── spec.base.yaml
-│   ├── spec.npm.yaml
-│   ├── spec.yaml               # Generated by setup.sh (git-ignored)
-│   └── files/workspace/        # Injected into the project root
-│       ├── .claude/skills/     # Shared skills (same as Claude sandbox)
-│       ├── .github/agents/     # afk-sprint.agent.md, code-reviewer.agent.md, coder.agent.md
-│       └── docs/agents/        # issue-tracker.md, triage-labels.md
-├── npm-auth/
-│   └── spec.yaml               # Standalone mixin (reference for NPM auth pattern)
-├── .env.example                # Template for environment config
-└── setup.sh                    # Picks spec variant, replaces placeholders
-```
-
-## Configuration
-
-Copy `.env.example` to `.env` and fill in:
-
-| Variable | Description |
-|----------|-------------|
-| `SSO_SUBDOMAIN` | Your AWS SSO subdomain (the part before `.awsapps.com`) |
-| `SSO_REGION` | AWS region for SSO and Bedrock |
-| `SSO_ROLE_NAME` | IAM role name for sandbox sessions |
-| `SSO_ACCOUNT_ID` | AWS account ID |
-| `USE_NPM` | Set to `true` to include NPM registry auth in generated specs |
-
-## Inside the sandbox
-
-### Skills (slash commands)
-
-Skills are instructions loaded into the agent's context. Invoke them by typing `/skill-name` in chat.
-
-**Bundled in this template:**
-
-| Command | What it does |
-|---------|-------------|
-| `/afk-sprint` | Autonomous sprint — implements all `ready-for-agent` issues hands-off |
-| `/solve-issue` | Implement one issue end-to-end: explore → TDD → verify → commit |
-| `/tdd` | TDD style guide for the current session |
-| `/address-code-review` | Triage sprint review findings and implement valid ones with TDD |
-
-**Optional — not bundled (install or write separately):**
-
-| Command | What it does |
-|---------|-------------|
-| `/grill-me` | Stress-test a plan with relentless questions |
-| `/to-prd` | Convert conversation context into a PRD |
-| `/to-issues` | Break a PRD into numbered implementation issues |
-| `/address-pr-comments` | Fetch PR review comments, challenge each, implement valid ones |
-
-### Agents
-
-Agents are autonomous workers invoked by skills or directly:
-
-| Agent | Platform | Role |
-|-------|----------|------|
-| `coder` | Claude Code | Implements one issue in an isolated git worktree |
-| `code-reviewer` | Claude Code | Reviews all merged branches after a sprint |
-| `@coder` | Copilot | Implements one issue sequentially in the repo |
-| `@code-reviewer` | Copilot | Reviews commits from the sprint session |
-| `@afk-sprint` | Copilot | Orchestrates the full sprint loop |
-
-### Issue tracker
-
-Issues are plain markdown files in `.scratch/` — no external service needed. Both platforms read and write the same format.
+## Adding a new kit
 
 ```
-.scratch/
-└── <feature-slug>/
-    ├── PRD.md
-    └── issues/
-        ├── 01-add-endpoint.md    # Status: ready-for-agent
-        ├── 02-add-tests.md
-        └── done/
-            └── 01-add-endpoint.md
+kits/<name>/
+  spec.yaml                       # or spec.src.yaml if it needs envsubst
+  settings.fragment.json          # optional — merged into settings.json by sbx-run
+  files/home/                     # optional — injected into sandbox ~/
 ```
 
-See [docs/USAGE.md](docs/USAGE.md) for the full issue format, status labels, and platform comparison.
-
-## Customising workspace files
-
-All workspace customization (skills, agents, settings) lives in `files/workspace/.claude/` for the Copilot template and `files/home/.claude/` for the Claude template. Edit these in the template directory before running `sbx run`.
+Run `sbx-run --list-kits` to confirm it's discovered.

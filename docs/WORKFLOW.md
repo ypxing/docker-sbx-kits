@@ -43,7 +43,7 @@ The sandbox gives your team a three-phase AI-assisted delivery loop:
  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-† `/grill-me`, `/to-prd`, `/to-issues` are not bundled in this template. Install them separately, or write issue files by hand — the format is simple (see Step 3).
+† `/grill-me`, `/to-prd`, `/to-issues` are bundled in this template.
 
 ---
 
@@ -127,7 +127,7 @@ See [Platform comparison](#platform-comparison) if you're unsure which to pick.
 
 Create issue files that describe what to build. Each issue file is a plain markdown file in `.scratch/`.
 
-**If you have optional planning skills installed** (`/grill-me`, `/to-prd`, `/to-issues`):
+**Using planning skills** (`/grill-me`, `/to-prd`, `/to-issues`):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -435,7 +435,7 @@ sbx run claude-sbx --kit ./claude-sbx/
 > /afk-sprint
 ```
 
-### Start a new feature (with optional planning skills)
+### Start a new feature (with planning skills)
 
 ```bash
 sbx run claude-sbx --kit ./claude-sbx/
@@ -482,7 +482,7 @@ Surfaces refactoring opportunities informed by your CONTEXT.md and ADRs.
 | `setup.sh` fails                                | Missing `.env` variable                  | Run `cp .env.example .env` and fill every required field                   |
 | `sbx run` fails auth                            | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx run`                    |
 | Agent implements wrong thing                    | Issue acceptance criteria are ambiguous  | Rewrite criteria as testable bullet points, then re-run                    |
-| `/grill-me`, `/to-prd`, `/to-issues` do nothing | Skills not installed                     | These are optional — install them separately or write issues manually      |
+| `/grill-me`, `/to-prd`, `/to-issues` do nothing | Command not typed correctly              | Type the command exactly — e.g. `/grill-me` at the start of a new line     |
 
 ---
 

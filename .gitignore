@@ -1,4 +1,7 @@
 .env
 .DS_Store
-claude-sbx/spec.yaml
-copilot-sbx/spec.yaml
+agents/*/spec.yaml
+kits/*/spec.yaml
+kits/aws-bedrock-sso/settings.fragment.json
+kits/aws-bedrock-sso/files/home/.aws/config
+kits/*-wk

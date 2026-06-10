@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# Usage: sbx-run [run] [<agent>] [--kit <name>] ... [-- <sbx-args>]
+#        sbx-run <subcommand> [args...]   # proxied to: sbx <subcommand> [args...]
+#
+#   run          - optional; smart wrapper around sbx run (default when no subcommand)
+#   agent        - agent from agents/ (default: claude-docker)
+#   --kit name   - kit from kits/; may be repeated; only applied on first create
+#   --list-kits  - list available kits and exit
+#   ...          - any other flags/args are passed through to sbx run
+#
+# All other subcommands (ls, list, rm, stop, exec, ...) are passed through to sbx.
+# Run from the project directory you want to sandbox (workspace = cwd).
+# Requires: sbx, jq
+
+set -euo pipefail
+
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+AGENTS_DIR="$SCRIPT_DIR/agents"
+KITS_DIR="$SCRIPT_DIR/kits"
+
+command -v jq >/dev/null || { echo "Error: jq not found. Install: brew install jq"; exit 1; }
+
+list_kits() {
+  local found=0
+  for dir in "$KITS_DIR"/*/; do
+    [[ -d "$dir" ]] && echo "  $(basename "$dir")" && found=1
+  done
+  [[ $found -eq 0 ]] && echo "  (none)"
+}
+
+# Route non-run subcommands directly to sbx
+case "${1:-}" in
+  ls|list|rm|stop|exec|cp|create|diagnose|kit|ports|reset|secret|template|version|policy|login|logout|completion)
+    exec sbx "$@" ;;
+  run)
+    shift ;;  # consume 'run'; remaining args handled below
+esac
+
+AGENT="claude-docker"
+extra_kits=()
+passthrough_args=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --list-kits) echo "Available kits:"; list_kits; exit 0 ;;
+    --kit)
+      [[ -z "${2:-}" ]] && { echo "Error: --kit requires a name" >&2; exit 1; }
+      extra_kits+=("$2"); shift 2 ;;
+    -*)
+      passthrough_args+=("$1"); shift ;;
+    *)
+      if [[ -d "$AGENTS_DIR/$1" ]]; then
+        AGENT="$1"; shift
+      else
+        passthrough_args+=("$1"); shift
+      fi ;;
+  esac
+done
+
+AGENT_DIR="$AGENTS_DIR/$AGENT"
+[[ -d "$AGENT_DIR" ]] || { echo "Error: agent '$AGENT' not found. Available: $(ls "$AGENTS_DIR" | tr '\n' ' ')" >&2; exit 1; }
+
+# Resolve kit dirs (bare names → kits/, relative → cwd, absolute as-is)
+kit_dirs=()
+for kit in "${extra_kits[@]+"${extra_kits[@]}"}"; do
+  if [[ "$kit" != /* && "$kit" != ./* ]]; then kit="$KITS_DIR/$kit"; fi
+  abs="$(cd "$kit" 2>/dev/null && pwd)" || { echo "Error: kit not found: $kit" >&2; exit 1; }
+  kit_dirs+=("$abs")
+done
+
+WORKSPACE="$(pwd)"
+EXISTING=$(sbx list 2>/dev/null | awk -v a="$AGENT" -v w="$WORKSPACE" 'NR>1 && $2==a && $NF==w {print $1}')
+
+# Merge settings fragments from agent + kits (in order) using jq
+# Objects are deep-merged; arrays are concatenated and deduped
+merge_fragments() {
+  local dirs=("$AGENT_DIR" "${kit_dirs[@]+"${kit_dirs[@]}"}")
+  local result="{}"
+  for dir in "${dirs[@]}"; do
+    local frag="$dir/settings.fragment.json"
+    [[ -f "$frag" ]] || continue
+    result=$(jq -s '
+      def deepmerge(a; b):
+        a as $a | b as $b |
+        if ($a | type) == "object" and ($b | type) == "object" then
+          reduce ($b | keys[]) as $k ($a; .[$k] = deepmerge($a[$k]; $b[$k]))
+        elif ($a | type) == "array" and ($b | type) == "array" then
+          ($a + $b | unique)
+        else $b end;
+      deepmerge(.[0]; .[1])
+    ' <(echo "$result") "$frag")
+  done
+  echo "$result"
+}
+
+TMPDIR_MERGED=$(mktemp -d)
+trap 'rm -rf "$TMPDIR_MERGED"' EXIT
+
+mkdir -p "$TMPDIR_MERGED/files/home/.claude"
+merge_fragments > "$TMPDIR_MERGED/files/home/.claude/settings.json"
+
+cat > "$TMPDIR_MERGED/spec.yaml" <<'EOF'
+schemaVersion: "1"
+kind: mixin
+name: merged-settings
+description: Auto-generated merged settings fragment.
+EOF
+
+if [[ -n "$EXISTING" ]]; then
+  echo "Sandbox '$EXISTING' exists — resuming."
+  sbx run "$AGENT" --kit "$AGENT_DIR/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
+else
+  kit_args=()
+  for d in "${kit_dirs[@]+"${kit_dirs[@]}"}"; do kit_args+=(--kit "$d/"); done
+  [[ ${#kit_dirs[@]} -gt 0 ]] \
+    && echo "Creating sandbox for $AGENT at $WORKSPACE with ${#kit_dirs[@]} kit(s)." \
+    || echo "Creating sandbox for $AGENT at $WORKSPACE."
+  sbx run "$AGENT" --kit "$AGENT_DIR/" "${kit_args[@]+"${kit_args[@]}"}" --kit "$TMPDIR_MERGED/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
+fi

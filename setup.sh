@@ -3,9 +3,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
+for cmd in envsubst jq; do
+  command -v "$cmd" >/dev/null || { echo "Error: $cmd not found. Install: brew install ${cmd/envsubst/gettext}"; exit 1; }
+done
+
 if [ ! -f .env ]; then
   echo "Error: .env not found. Copy .env.example to .env and fill in your values."
-  echo "  cp .env.example .env"
   exit 1
 fi
 
@@ -16,39 +19,29 @@ source .env
 : "${SSO_ROLE_NAME:?SSO_ROLE_NAME is required in .env}"
 : "${SSO_ACCOUNT_ID:?SSO_ACCOUNT_ID is required in .env}"
 
-USE_NPM="${USE_NPM:-true}"
+export SSO_SUBDOMAIN SSO_REGION SSO_ROLE_NAME SSO_ACCOUNT_ID
+export BEDROCK_SONNET_MODEL="${BEDROCK_SONNET_MODEL:-au.anthropic.claude-sonnet-4-6[1m]}"
+export BEDROCK_OPUS_MODEL="${BEDROCK_OPUS_MODEL:-au.anthropic.claude-opus-4-6-v1[1m]}"
+export BEDROCK_HAIKU_MODEL="${BEDROCK_HAIKU_MODEL:-au.anthropic.claude-haiku-4-5-20251001-v1:0}"
 
-# Pick the right spec variant and output as spec.yaml (what sbx run reads)
-for dir in claude-sbx copilot-sbx; do
-  if [ "$USE_NPM" = "true" ]; then
-    cp "$dir/spec.npm.yaml" "$dir/spec.yaml"
-  else
-    cp "$dir/spec.base.yaml" "$dir/spec.yaml"
-  fi
-done
+VARS='$SSO_SUBDOMAIN:$SSO_REGION:$SSO_ROLE_NAME:$SSO_ACCOUNT_ID:$BEDROCK_SONNET_MODEL:$BEDROCK_OPUS_MODEL:$BEDROCK_HAIKU_MODEL'
 
-# Replace AWS placeholders in claude-sbx
-if [[ "$(uname)" == "Darwin" ]]; then
-  sed -i '' \
-    -e "s|<YOUR_SSO_SUBDOMAIN>|${SSO_SUBDOMAIN}|g" \
-    -e "s|<YOUR_REGION>|${SSO_REGION}|g" \
-    -e "s|<YOUR_ROLE_NAME>|${SSO_ROLE_NAME}|g" \
-    -e "s|<YOUR_ACCOUNT_ID>|${SSO_ACCOUNT_ID}|g" \
-    claude-sbx/spec.yaml \
-    claude-sbx/files/home/.aws/config
-else
-  sed -i \
-    -e "s|<YOUR_SSO_SUBDOMAIN>|${SSO_SUBDOMAIN}|g" \
-    -e "s|<YOUR_REGION>|${SSO_REGION}|g" \
-    -e "s|<YOUR_ROLE_NAME>|${SSO_ROLE_NAME}|g" \
-    -e "s|<YOUR_ACCOUNT_ID>|${SSO_ACCOUNT_ID}|g" \
-    claude-sbx/spec.yaml \
-    claude-sbx/files/home/.aws/config
-fi
+# Process all spec.src.yaml → spec.yaml under agents/ and kits/
+while IFS= read -r src; do
+  envsubst "$VARS" < "$src" > "${src/spec.src.yaml/spec.yaml}"
+done < <(find agents kits -name "spec.src.yaml")
 
-echo "Generated: claude-sbx/spec.yaml (USE_NPM=$USE_NPM)"
-echo "Generated: copilot-sbx/spec.yaml (USE_NPM=$USE_NPM)"
+# Process all other .tpl files — output strips the .tpl suffix
+while IFS= read -r tpl; do
+  envsubst "$VARS" < "$tpl" > "${tpl%.tpl}"
+done < <(find agents kits -name "*.tpl")
+
+echo "Configuration:"
+echo "  SSO_SUBDOMAIN  = ${SSO_SUBDOMAIN}"
+echo "  SSO_REGION     = ${SSO_REGION}"
+echo "  SSO_ROLE_NAME  = ${SSO_ROLE_NAME}"
+echo "  SSO_ACCOUNT_ID = ${SSO_ACCOUNT_ID:0:4}************"
 echo ""
-echo "Run your sandbox with:"
-echo "  sbx run claude-sbx --kit ./claude-sbx/"
-echo "  sbx run copilot-sbx --kit ./copilot-sbx/"
+echo "Generated:"
+find agents kits -name "spec.src.yaml" | sed 's/spec\.src\.yaml/spec.yaml/'
+find agents kits -name "*.tpl" | sed 's/\.tpl$//'

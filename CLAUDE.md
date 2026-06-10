@@ -1,31 +1,33 @@
 # SBX Templates
 
-Sandbox templates for AI coding agents (Claude Code, GitHub Copilot) with AWS Bedrock and optional NPM auth.
+Sandbox templates for AI coding agents with composable kits.
 
 ## Layout
 
-- `claude-sbx/` and `copilot-sbx/` are the two templates
-- Each has two source specs: `spec.base.yaml` (no NPM) and `spec.npm.yaml` (with NPM)
-- `setup.sh` copies the right one to `spec.yaml` (git-ignored) based on `USE_NPM` in `.env`, then replaces `<YOUR_...>` placeholders
+- `agents/` — agent templates (`claude-docker`, `copilot-docker`)
+- `kits/` — optional add-ons merged in at sandbox create time (`aws-bedrock-sso`, `npm-auth`)
+- `setup.sh` — runs `envsubst` over all `*.tpl` files under `agents/` and `kits/`
+- `sbx-run` — smart wrapper: detects existing sandbox, merges `settings.fragment.json` files
 
 ## Key rules
 
-- Edit `spec.base.yaml` or `spec.npm.yaml` — never edit `spec.yaml` directly (it's generated)
-- Edit `files/` directly in each template directory
-- Never commit `.env` — it contains org-specific values; `.env.example` is the committed template
-- Placeholders use the pattern `<YOUR_VARIABLE_NAME>` in spec files and .aws/config
-- Each generated `spec.yaml` has a `name` field that must match its directory name
-- Claude templates use `--dangerously-skip-permissions` entrypoint (sandbox-only)
-- Copilot templates use `--yolo` entrypoint (sandbox-only)
+- Edit `spec.src.yaml` — never `spec.yaml` (generated)
+- Edit `settings.fragment.json` or `settings.fragment.json.tpl` in the agent or kit root — never a merged output
+- Never commit `.env`
+- Each `spec.yaml` `name` field must match its directory name
+- `claude-docker` uses `--dangerously-skip-permissions` (sandbox-only)
+- `copilot-docker` uses `--yolo` (sandbox-only)
 
-## Specs
+## Settings fragments
 
-Each template's spec files define:
-- `agent.image` — Docker image to use
-- `agent.entrypoint` — Command to run
-- `environment.variables` — Env vars set in sandbox
-- `environment.proxyManaged` — Secrets injected by the proxy (not in files)
-- `network.allowedDomains` — Network allowlist
-- `commands.install` — Setup commands run at sandbox init
+`sbx-run` deep-merges `settings.fragment.json` from the agent dir then each kit dir (in order):
+- Objects: recursively merged, last kit wins per key
+- Arrays (`permissions.allow/deny`, `hooks.*`): concatenated and deduped
+- Scalars: last kit wins
 
-The `spec.npm.yaml` variant additionally includes NPM registry auth, service routing, and credentials.
+## Adding a new kit
+
+1. Create `kits/<name>/`
+2. Add `spec.yaml` (or `spec.src.yaml` + `.tpl` if it needs env var substitution)
+3. Optionally add `settings.fragment.json` (or `.tpl`) for settings contributions
+4. Optionally add `files/` for files to inject into the sandbox home
