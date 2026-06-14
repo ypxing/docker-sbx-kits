@@ -31,7 +31,7 @@ The `npm-auth` kit injects your `NPM_TOKEN` via the sandbox proxy — the token 
 Store the token in macOS Keychain and register it as a global sbx secret:
 
 ```bash
-echo $(security find-generic-password -s 'npm_token' -w) | sbx secret set -g npm-registry
+echo $(security find-generic-password -s 'npm_token' -w) | sbx secret set -g npm-auth
 ```
 
 This reads from Keychain (not a file or env var) and pipes directly into the sbx secret store — the value never appears as a CLI argument or lands in shell history.

@@ -8,15 +8,15 @@ network:
   allowedDomains:
     - registry.npmjs.org
   serviceDomains:
-    registry.npmjs.org: npm-registry
+    registry.npmjs.org: npm-auth
   serviceAuth:
-    npm-registry:
+    npm-auth:
       headerName: Authorization
       valueFormat: "Bearer %s"
 
 credentials:
   sources:
-    npm-registry:
+    npm-auth:
       env:
         - NPM_TOKEN
 
