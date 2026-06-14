@@ -7,7 +7,7 @@ description: Claude Code agent. Combine with kits for cloud auth, registry acces
 agent:
   image: "docker/sandbox-templates:claude-code"
   entrypoint:
-    run: [claude]
+    run: [claude, --dangerously-skip-permissions]
 
 environment:
   variables:

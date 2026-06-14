@@ -6,12 +6,12 @@ Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot).
 
 ### 1. Agents — Claude and Copilot, with or without Docker-in-sandbox
 
-| Agent | Image | Docker inside? |
-|---|---|---|
-| `claude-docker` | `claude-code-docker` | yes — full Docker Desktop sandbox |
-| `claude-sbx` | `claude-code` | no — lightweight sbx runtime |
-| `copilot-docker` | `copilot-docker` | yes |
-| `copilot-sbx` | `copilot` | no |
+| Agent | Image | Docker inside? | Flag |
+|---|---|---|---|
+| `claude-docker` | `claude-code-docker` | yes — full Docker Desktop sandbox | `--dangerously-skip-permissions` |
+| `claude-sbx` | `claude-code` | no — lightweight sbx runtime | `--dangerously-skip-permissions` |
+| `copilot-docker` | `copilot-docker` | yes | `--yolo` |
+| `copilot-sbx` | `copilot` | no | `--yolo` |
 
 Pick `*-docker` when your project needs to build or run containers. Pick `*-sbx` for a lighter footprint.
 
@@ -28,6 +28,14 @@ IS_SANDBOX=1          # lets tooling and scripts detect they're running in a san
 
 The `npm-auth` kit injects your `NPM_TOKEN` via the sandbox proxy — the token never touches the filesystem or shell history. The sandbox routes `registry.npmjs.org` traffic through the proxy and injects the `Authorization: Bearer <token>` header automatically.
 
+Store the token in macOS Keychain and register it as a global sbx secret:
+
+```bash
+echo $(security find-generic-password -s 'npm_token' -w) | sbx secret set -g npm-registry
+```
+
+This reads from Keychain (not a file or env var) and pipes directly into the sbx secret store — the value never appears as a CLI argument or lands in shell history.
+
 ```bash
 sbx-run claude-docker --kit npm-auth
 ```
@@ -40,13 +48,17 @@ The `aws-bedrock-sso` kit mounts short-lived AWS credentials from your SSO sessi
 sbx-run claude-docker --kit aws-bedrock-sso
 ```
 
-Configurable models via `.env`:
+Configure via `~/.sbx-kits/.env`:
 
-| Variable               | Default |
-| ---------------------- | ------- |
-| `BEDROCK_SONNET_MODEL` | `au.anthropic.claude-sonnet-4-6[1m]` |
-| `BEDROCK_OPUS_MODEL`   | `au.anthropic.claude-opus-4-6-v1[1m]` |
-| `BEDROCK_HAIKU_MODEL`  | `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Variable               | Required | Description                              |
+| ---------------------- | -------- | ---------------------------------------- |
+| `SSO_SUBDOMAIN`        | yes      | AWS SSO subdomain (before `.awsapps.com`) |
+| `SSO_REGION`           | yes      | AWS region                               |
+| `SSO_ROLE_NAME`        | yes      | IAM role name                            |
+| `SSO_ACCOUNT_ID`       | yes      | AWS account ID                           |
+| `BEDROCK_SONNET_MODEL` | no       | Default: `au.anthropic.claude-sonnet-4-6[1m]` |
+| `BEDROCK_OPUS_MODEL`   | no       | Default: `au.anthropic.claude-opus-4-6-v1[1m]` |
+| `BEDROCK_HAIKU_MODEL`  | no       | Default: `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
 ### 5. Pre-installed workflow kit (`claude-wk` / `copilot-wk`)
 
@@ -113,18 +125,6 @@ sbx-run --list-kits
 - **Subsequent runs** — resumes existing sandbox (kits ignored by sbx after create)
 
 In both cases, `settings.fragment.json` files from the agent and all kits are deep-merged and injected as the final kit.
-
-## .env variables
-
-| Variable               | Required | Description                              |
-| ---------------------- | -------- | ---------------------------------------- |
-| `SSO_SUBDOMAIN`        | yes      | AWS SSO subdomain (before `.awsapps.com`) |
-| `SSO_REGION`           | yes      | AWS region                               |
-| `SSO_ROLE_NAME`        | yes      | IAM role name                            |
-| `SSO_ACCOUNT_ID`       | yes      | AWS account ID                           |
-| `BEDROCK_SONNET_MODEL` | no       | Default: `au.anthropic.claude-sonnet-4-6[1m]` |
-| `BEDROCK_OPUS_MODEL`   | no       | Default: `au.anthropic.claude-opus-4-6-v1[1m]` |
-| `BEDROCK_HAIKU_MODEL`  | no       | Default: `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
 ## Adding a new kit
 
