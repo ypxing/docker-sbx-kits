@@ -8,8 +8,8 @@ Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot).
 
 | Agent | Image | Docker inside? | Flag |
 |---|---|---|---|
-| `claude-docker` | `claude-code-docker` | yes — full Docker Desktop sandbox | `--dangerously-skip-permissions` |
-| `claude-sbx` | `claude-code` | no — lightweight sbx runtime | `--dangerously-skip-permissions` |
+| `claude-docker` | `claude-code-docker` | yes | `--dangerously-skip-permissions` |
+| `claude-sbx` | `claude-code` | no | `--dangerously-skip-permissions` |
 | `copilot-docker` | `copilot-docker` | yes | `--yolo` |
 | `copilot-sbx` | `copilot` | no | `--yolo` |
 
