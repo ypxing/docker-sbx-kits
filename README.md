@@ -4,7 +4,7 @@ Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot).
 
 ## Prerequisites
 
-- **`sbx` CLI** — [Docker Sandbox](https://www.docker.com/products/sandbox/)
+- **`sbx` CLI** — [Docker Sandbox](https://docs.docker.com/ai/sandboxes/)
 - **`jq`** — `brew install jq`
 - **`envsubst`** — `brew install gettext`
 
