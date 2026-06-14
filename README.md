@@ -1,18 +1,83 @@
 # SBX Templates
 
-Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot). Agents provide the base runtime; kits layer in cloud auth, registry access, and settings.
+Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot). Agents provide the base runtime; kits layer in cloud auth, registry access, and pre-installed workflows.
+
+## What this covers
+
+### 1. Agents — Claude and Copilot, with or without Docker-in-sandbox
+
+| Agent | Image | Docker inside? |
+|---|---|---|
+| `claude-docker` | `claude-code-docker` | yes — full Docker Desktop sandbox |
+| `claude-sbx` | `claude-code` | no — lightweight sbx runtime |
+| `copilot-docker` | `copilot-docker` | yes |
+| `copilot-sbx` | `copilot` | no |
+
+Pick `*-docker` when your project needs to build or run containers. Pick `*-sbx` for a lighter footprint.
+
+### 2. Sandbox identity flags
+
+Every agent sets two environment variables automatically:
+
+```
+SBX_NO_TELEMETRY=1   # disable telemetry inside the sandbox
+IS_SANDBOX=1          # lets tooling and scripts detect they're running in a sandbox
+```
+
+### 3. Secure NPM token (`npm-auth` kit)
+
+The `npm-auth` kit injects your `NPM_TOKEN` via the sandbox proxy — the token never touches the filesystem or shell history. The sandbox routes `registry.npmjs.org` traffic through the proxy and injects the `Authorization: Bearer <token>` header automatically.
+
+```bash
+sbx-run claude-docker --kit npm-auth
+```
+
+### 4. AWS Bedrock via SSO (`aws-bedrock-sso` kit)
+
+The `aws-bedrock-sso` kit mounts short-lived AWS credentials from your SSO session and configures Claude Code to route model calls through Amazon Bedrock. No long-lived keys — credentials refresh via `aws sso login`.
+
+```bash
+sbx-run claude-docker --kit aws-bedrock-sso
+```
+
+Configurable models via `.env`:
+
+| Variable               | Default |
+| ---------------------- | ------- |
+| `BEDROCK_SONNET_MODEL` | `au.anthropic.claude-sonnet-4-6[1m]` |
+| `BEDROCK_OPUS_MODEL`   | `au.anthropic.claude-opus-4-6-v1[1m]` |
+| `BEDROCK_HAIKU_MODEL`  | `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
+
+### 5. Pre-installed workflow kit (`claude-wk` / `copilot-wk`)
+
+The `claude-wk` and `copilot-wk` kits bootstrap the [coding-crew](https://github.com/ypxing/coding-crew) toolchain into the sandbox at create time. This gives the agent a pre-wired `/grill-me` workflow and the `/afk` (away-from-keyboard) autonomous coder — so you can start a long coding task and walk away.
+
+```bash
+sbx-run claude-docker --kit claude-wk
+sbx-run copilot-docker --kit copilot-wk
+```
+
+Kits can be combined:
+
+```bash
+sbx-run claude-docker --kit aws-bedrock-sso --kit claude-wk
+```
+
+---
 
 ## Structure
 
 ```
 agents/
-  claude-docker/            # Claude Code (Docker Desktop sandbox)
-  claude-sbx/               # Claude Code (Docker Sandbox / sbx CLI)
-  copilot-docker/           # GitHub Copilot (Docker Desktop sandbox)
-  copilot-sbx/              # GitHub Copilot (Docker Sandbox / sbx CLI)
+  claude-docker/            # Claude Code + Docker Desktop sandbox
+  claude-sbx/               # Claude Code + lightweight sbx runtime
+  copilot-docker/           # GitHub Copilot + Docker Desktop sandbox
+  copilot-sbx/              # GitHub Copilot + lightweight sbx runtime
 kits/
-  aws-bedrock-sso/          # AWS SSO auth + Bedrock routing + AWS CLI
-  npm-auth/                 # NPM registry auth
+  aws-bedrock-sso/          # AWS SSO auth + Bedrock model routing
+  npm-auth/                 # Secure NPM registry auth via proxy
+  claude-wk/                # coding-crew workflows for Claude (grill-me, afk)
+  copilot-wk/               # coding-crew workflows for Copilot (grill-me, afk)
 setup.sh                    # envsubst over all *.tpl files
 sbx-run                     # smart sbx run wrapper
 ```
