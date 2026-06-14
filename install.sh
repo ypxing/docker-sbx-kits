@@ -5,7 +5,7 @@ set -euo pipefail
 
 REPO="https://github.com/ypxing/docker-sbx-kits.git"
 INSTALL_DIR="${SBX_KITS_DIR:-$HOME/.sbx-kits}"
-BIN_CANDIDATES=("$HOME/.local/bin" "/usr/local/bin")
+BIN_CANDIDATES=("$HOME/.local/bin" "$HOME/.bin" "/usr/local/bin")
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
