@@ -102,8 +102,9 @@ merge_fragments() {
 TMPDIR_MERGED=$(mktemp -d)
 trap 'rm -rf "$TMPDIR_MERGED"' EXIT
 
-mkdir -p "$TMPDIR_MERGED/files/home/.claude"
-merge_fragments > "$TMPDIR_MERGED/files/home/.claude/settings.json"
+SETTINGS_DEST=$(cat "$AGENT_DIR/settings.dest" 2>/dev/null || echo ".claude/settings.json")
+mkdir -p "$TMPDIR_MERGED/files/home/$(dirname "$SETTINGS_DEST")"
+merge_fragments > "$TMPDIR_MERGED/files/home/$SETTINGS_DEST"
 
 cat > "$TMPDIR_MERGED/spec.yaml" <<'EOF'
 schemaVersion: "1"
