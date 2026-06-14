@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/ypxing/docker-sbx-kits/main/install.sh | bash
 set -euo pipefail
 
-REPO="git@github.com:ypxing/docker-sbx-kits.git"
+REPO="https://github.com/ypxing/docker-sbx-kits.git"
 INSTALL_DIR="${SBX_KITS_DIR:-$HOME/.sbx-kits}"
 BIN_CANDIDATES=("$HOME/.local/bin" "/usr/local/bin")
 

@@ -11,6 +11,6 @@ network:
 commands:
   install:
     - command: |
-        curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- claude
+        curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/16e85098a8a3baae01761fb7dede62edcc079e31/bootstrap.sh | bash -s -- claude
       user: "1000"
       description: "Install coding-crew"
