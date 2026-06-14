@@ -13,9 +13,6 @@ environment:
   variables:
     IS_SANDBOX: "1"
     SBX_NO_TELEMETRY: "1"
-  proxyManaged:
-    - GH_TOKEN
-    - GITHUB_TOKEN
 
 network:
   allowedDomains:
