@@ -72,29 +72,17 @@ SSO_SUBDOMAIN=your-org-sso        # e.g. "acme" → acme.awsapps.com
 SSO_REGION=ap-southeast-2
 SSO_ROLE_NAME=YourIAMRole
 SSO_ACCOUNT_ID=123456789012
-USE_NPM=false                     # change to true only if you need private NPM packages
 ```
 
-Then generate `spec.yaml`:
+Then generate all `spec.yaml` files:
 
 ```bash
 ~/.sbx-kits/setup.sh
 ```
 
-```
-.env (your values)
-      │
-      ▼
-  setup.sh
-      │
-      ├── USE_NPM=false  →  spec.base.yaml  ─┐
-      │                                       ├──►  spec.yaml  (git-ignored, per-developer)
-      └── USE_NPM=true   →  spec.npm.yaml   ─┘
-```
+`setup.sh` runs `envsubst` over every `spec.src.yaml` under `agents/` and `kits/`, substituting your SSO values to produce the corresponding `spec.yaml` files (which are git-ignored).
 
-> **Note:** `spec.yaml` is git-ignored — each developer generates their own. If you need to customise the sandbox (e.g. add a domain to the allowlist), edit `spec.base.yaml` or `spec.npm.yaml` — not `spec.yaml` directly, since re-running `setup.sh` overwrites it.
-
-> **Copilot template:** `setup.sh` only replaces AWS placeholders in the Claude template. The Copilot `spec.yaml` is copied from `spec.base.yaml` / `spec.npm.yaml` as-is — it has no AWS placeholders to fill.
+> **Note:** Never edit `spec.yaml` directly — re-running `setup.sh` overwrites it. Edit `spec.src.yaml` instead.
 
 ## Step 2 — Choose your platform
 

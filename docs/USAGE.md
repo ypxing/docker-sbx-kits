@@ -115,7 +115,7 @@ Every feature follows the same three phases regardless of platform:
 ### Getting started
 
 ```bash
-sbx-run claude-sbx
+sbx-run claude-docker
 ```
 
 You land in a Claude Code session with all bundled skills and agents preloaded. Type `/command-name` to invoke any skill.
