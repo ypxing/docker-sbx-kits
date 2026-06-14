@@ -6,8 +6,10 @@ Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot).
 
 ```
 agents/
-  claude-docker/            # Claude Code base (no cloud assumptions)
-  copilot-docker/           # GitHub Copilot base
+  claude-docker/            # Claude Code (Docker Desktop sandbox)
+  claude-sbx/               # Claude Code (Docker Sandbox / sbx CLI)
+  copilot-docker/           # GitHub Copilot (Docker Desktop sandbox)
+  copilot-sbx/              # GitHub Copilot (Docker Sandbox / sbx CLI)
 kits/
   aws-bedrock-sso/          # AWS SSO auth + Bedrock routing + AWS CLI
   npm-auth/                 # NPM registry auth
@@ -25,18 +27,14 @@ sbx-run                     # smart sbx run wrapper
 ## Quick start
 
 ```bash
-# 1. Clone and symlink
-git clone <repo-url> ~/sbx-template
-ln -s ~/sbx-template/sbx-run /usr/local/bin/sbx-run
+# 1. Install (or update)
+curl -fsSL https://raw.githubusercontent.com/ypxing/docker-sbx-kits/main/install.sh | bash
 
-# 2. Configure
-cp ~/sbx-template/.env.example ~/sbx-template/.env
-# edit .env with your SSO values
+# 2. Configure (first time only)
+# edit ~/.sbx-kits/.env with your SSO values, then:
+~/.sbx-kits/setup.sh
 
-# 3. Generate config files
-~/sbx-template/setup.sh
-
-# 4. Run from your project directory
+# 3. Run from your project directory
 cd /path/to/project
 sbx-run                                          # claude-docker, no kits
 sbx-run claude-docker --kit aws-bedrock-sso      # with AWS Bedrock

@@ -58,17 +58,14 @@ Before starting, make sure you have:
 - **`sbx` CLI** installed and authenticated (ask your platform team for the install link)
 - **AWS SSO access** — your account needs an IAM role with Bedrock permissions (Claude template only)
 
-## Step 1 — Configure credentials
+## Step 1 — Install and configure credentials
 
 ```bash
-# Clone the template repo
-git clone <repo-url> && cd sbx-template
-
-# Create your local .env (never committed)
-cp .env.example .env
+# Install (or update) — clones to ~/.sbx-kits and symlinks sbx-run onto your PATH
+curl -fsSL https://raw.githubusercontent.com/ypxing/docker-sbx-kits/main/install.sh | bash
 ```
 
-Open `.env` and fill in your org's values:
+Open `~/.sbx-kits/.env` and fill in your org's values:
 
 ```
 SSO_SUBDOMAIN=your-org-sso        # e.g. "acme" → acme.awsapps.com
@@ -81,7 +78,7 @@ USE_NPM=false                     # change to true only if you need private NPM 
 Then generate `spec.yaml`:
 
 ```bash
-./setup.sh
+~/.sbx-kits/setup.sh
 ```
 
 ```
@@ -101,15 +98,15 @@ Then generate `spec.yaml`:
 
 ## Step 2 — Choose your platform
 
-Pick once based on your toolchain. This determines which `sbx run` command you use every day.
+Pick once based on your toolchain. This determines which `sbx-run` command you use every day.
 
 ```
  Do you use GitHub Copilot or Claude Code?
  │
- ├── Claude Code  ──►  sbx run claude-sbx --kit ./claude-sbx/
+ ├── Claude Code  ──►  sbx-run claude-sbx
  │                     Parallel coder agents, git worktree isolation per issue
  │
- └── Copilot      ──►  sbx run copilot-sbx --kit ./copilot-sbx/
+ └── Copilot      ──►  sbx-run copilot-sbx
                        Sequential coder subagent, simpler setup
 ```
 
@@ -121,7 +118,7 @@ See [Platform comparison](#platform-comparison) if you're unsure which to pick.
 
 # Part 2 — Day-to-day workflow
 
-> Before every session: run `aws sso login --profile sso-live` if your SSO token has expired, then `sbx run <platform> --kit ./<platform>/`.
+> Before every session: run `aws sso login --profile sso-live` if your SSO token has expired, then `sbx-run <platform>`.
 
 ## Step 3 — Plan your feature
 
@@ -430,7 +427,7 @@ your-project/
 ### Start a new feature (bundled tools only)
 
 ```bash
-sbx run claude-sbx --kit ./claude-sbx/
+sbx-run claude-sbx
 # Write .scratch/<feature>/issues/01-*.md manually, set Status: ready-for-agent
 > /afk-sprint
 ```
@@ -438,7 +435,7 @@ sbx run claude-sbx --kit ./claude-sbx/
 ### Start a new feature (with planning skills)
 
 ```bash
-sbx run claude-sbx --kit ./claude-sbx/
+sbx-run claude-sbx
 > /grill-me
 > "I want to add X to our API"
 > /to-prd
@@ -479,8 +476,8 @@ Surfaces refactoring opportunities informed by your CONTEXT.md and ADRs.
 | Sprint picks up 0 issues                        | No `Status: ready-for-agent` files found | Check `.scratch/*/issues/*.md` — the status line must match exactly        |
 | Issue keeps re-running each round               | Worker left it `partial`                 | Read its `## Progress` section, resolve the blocker, then re-run           |
 | Sprint stalls after 2 rounds                    | All remaining issues are `blocked`       | Read each `## Blocked` section, resolve dependencies manually, then re-run |
-| `setup.sh` fails                                | Missing `.env` variable                  | Run `cp .env.example .env` and fill every required field                   |
-| `sbx run` fails auth                            | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx run`                    |
+| `setup.sh` fails                                | Missing `.env` variable                  | Check `~/.sbx-kits/.env` — copy from `.env.example` and fill every required field |
+| `sbx-run` fails auth                            | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx-run`                    |
 | Agent implements wrong thing                    | Issue acceptance criteria are ambiguous  | Rewrite criteria as testable bullet points, then re-run                    |
 | `/grill-me`, `/to-prd`, `/to-issues` do nothing | Command not typed correctly              | Type the command exactly — e.g. `/grill-me` at the start of a new line     |
 

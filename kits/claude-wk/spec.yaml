@@ -1,0 +1,16 @@
+schemaVersion: "1"
+kind: mixin
+name: claude-wk
+displayName: Claude-Workspace
+description: Workspace mixin for Claude. Provides a heads-up display for Claude agents, showing model info, usage stats, and more.
+
+network:
+  allowedDomains:
+    - "raw.githubusercontent.com"
+
+commands:
+  install:
+    - command: |
+        curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- claude
+      user: "1000"
+      description: "Install coding-crew"
