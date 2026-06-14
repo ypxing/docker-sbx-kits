@@ -103,20 +103,43 @@ sbx-run                     # smart sbx run wrapper
 
 ## Quick start
 
+**1. Install (or update)**
+
 ```bash
-# 1. Install (or update)
 curl -fsSL https://raw.githubusercontent.com/ypxing/docker-sbx-kits/main/install.sh | bash
+```
 
-# 2. Configure (first time only)
-# edit ~/.sbx-kits/.env with your SSO values, then:
+**2. Configure (first time only — only needed for the `aws-bedrock-sso` kit)**
+
+Edit `~/.sbx-kits/.env` with your SSO values, then run:
+
+```bash
 ~/.sbx-kits/setup.sh
+```
 
-# 3. Run from your project directory
+**3. Run from your project directory**
+
+```bash
 cd /path/to/project
+```
+
+```bash
 sbx-run                                          # claude-docker, no kits
+```
+
+```bash
 sbx-run claude-docker --kit aws-bedrock-sso      # with AWS Bedrock
+```
+
+```bash
 sbx-run claude-docker --kit aws-bedrock-sso --kit npm-auth
+```
+
+```bash
 sbx-run copilot-docker
+```
+
+```bash
 sbx-run --list-kits
 ```
 
