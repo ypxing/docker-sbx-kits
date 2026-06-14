@@ -40,6 +40,15 @@ case "${1:-}" in
     exec sbx "$@" ;;
   run)
     shift ;;  # consume 'run'; remaining args handled below
+  --list-kits|--kit|-*)
+    ;;  # flags handled in the arg-parsing loop below
+  "")
+    ;;  # no subcommand — default to run
+  *)
+    if [[ ! -d "$AGENTS_DIR/${1:-}" ]]; then
+      echo "Error: unknown subcommand '$1'. Known subcommands: ls, list, rm, stop, exec, cp, create, diagnose, kit, ports, reset, secret, template, version, policy, login, logout, completion, run" >&2
+      exit 1
+    fi ;;
 esac
 
 AGENT="claude-docker"
