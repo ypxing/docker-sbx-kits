@@ -46,6 +46,17 @@ case "${1:-}" in
     ;;  # no subcommand — default to run
   *)
     if [[ ! -d "$AGENTS_DIR/${1:-}" ]]; then
+      matching=()
+      for dir in "$AGENTS_DIR"/*/; do
+        [[ -d "$dir" ]] || continue
+        base="$(basename "$dir")"
+        [[ "$base" == "${1:-}"* ]] && matching+=("$base")
+      done
+      if [[ ${#matching[@]} -gt 0 ]]; then
+        echo "Error: agent '${1:-}' not found. Did you mean: ${matching[*]}?" >&2
+        echo "Tip: use 'sbx run <agent>' directly if you don't need the kit/settings merge." >&2
+        exit 1
+      fi
       exec sbx "$@"
     fi ;;
 esac

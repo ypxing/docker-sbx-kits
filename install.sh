@@ -46,17 +46,16 @@ fi
 ln -sf "$INSTALL_DIR/sbx-run" "$BIN_DIR/sbx-run"
 success "sbx-run → $BIN_DIR/sbx-run"
 
-# ── first-time .env setup ─────────────────────────────────────────────────────
+# ── .env setup ────────────────────────────────────────────────────────────────
 
 ENV_FILE="$INSTALL_DIR/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
   cp "$INSTALL_DIR/.env.example" "$ENV_FILE"
-  echo ""
-  warn "Edit $ENV_FILE with your AWS SSO values, then run:"
-  warn "  $INSTALL_DIR/setup.sh"
-else
-  info "Running setup.sh"
-  "$INSTALL_DIR/setup.sh"
-  echo ""
-  success "Done. Run sbx-run from any project directory."
+  warn "Edit $ENV_FILE with your AWS SSO values if you use AWS-backed agents."
 fi
+
+# Always run setup to generate spec.yaml files (required before sbx-run works)
+info "Running setup.sh"
+"$INSTALL_DIR/setup.sh"
+echo ""
+success "Done. Run sbx-run from any project directory."

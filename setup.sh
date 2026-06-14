@@ -14,10 +14,12 @@ fi
 
 source .env
 
-: "${SSO_SUBDOMAIN:?SSO_SUBDOMAIN is required in .env}"
-: "${SSO_REGION:?SSO_REGION is required in .env}"
-: "${SSO_ROLE_NAME:?SSO_ROLE_NAME is required in .env}"
-: "${SSO_ACCOUNT_ID:?SSO_ACCOUNT_ID is required in .env}"
+# SSO vars are only required for AWS-backed agents; warn but continue if absent
+for var in SSO_SUBDOMAIN SSO_REGION SSO_ROLE_NAME SSO_ACCOUNT_ID; do
+  if [[ -z "${!var:-}" ]]; then
+    echo "Warning: $var not set in .env — AWS-backed agents will not be configured." >&2
+  fi
+done
 
 export SSO_SUBDOMAIN SSO_REGION SSO_ROLE_NAME SSO_ACCOUNT_ID
 export BEDROCK_SONNET_MODEL="${BEDROCK_SONNET_MODEL:-au.anthropic.claude-sonnet-4-6[1m]}"
