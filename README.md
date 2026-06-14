@@ -123,21 +123,31 @@ Edit `~/.sbx-kits/.env` with your SSO values, then run:
 cd /path/to/project
 ```
 
-```bash
-sbx-run                                          # claude-docker, no kits
-```
+Claude, no extras:
 
 ```bash
-sbx-run claude-docker --kit aws-bedrock-sso      # with AWS Bedrock
+sbx-run
 ```
+
+Claude with AWS Bedrock (requires step 2):
+
+```bash
+sbx-run claude-docker --kit aws-bedrock-sso
+```
+
+Claude with AWS Bedrock + private NPM registry:
 
 ```bash
 sbx-run claude-docker --kit aws-bedrock-sso --kit npm-auth
 ```
 
+GitHub Copilot:
+
 ```bash
 sbx-run copilot-docker
 ```
+
+List all available kits:
 
 ```bash
 sbx-run --list-kits
