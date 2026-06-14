@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-cmd=$(jq -r '.tool_input.command' 2>/dev/null) || true
+input=$(cat)
+cmd=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null) || cmd=""
 
 if echo "$cmd" | grep -qE 'make .*(deploy)' \
 || echo "$cmd" | grep -qE 'git push' \
