@@ -1,15 +1,11 @@
 {
+  "version": 1,
   "deniedUrls": [],
   "hooks": {
-    "PreToolUse": [
+    "preToolUse": [
       {
-        "matcher": "bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash $HOME/.copilot/hooks/pre-bash.sh"
-          }
-        ]
+        "type": "command",
+        "bash": "$HOME/.copilot/hooks/pre-bash.sh"
       }
     ]
   }
