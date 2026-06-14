@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.copilot/hooks/pre-bash.sh"
+            "command": "bash $HOME/.copilot/hooks/pre-bash.sh"
           }
         ]
       }
