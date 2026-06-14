@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+exec 2>>/tmp/pre-bash-hook.log
 input=$(cat)
+echo "[pre-bash] input: $input" >&2
 cmd=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null) || cmd=""
+echo "[pre-bash] cmd: $cmd" >&2
 
 if echo "$cmd" | grep -qE 'make .*(deploy)' \
 || echo "$cmd" | grep -qE 'git push' \
