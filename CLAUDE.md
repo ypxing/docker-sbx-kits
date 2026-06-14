@@ -1,4 +1,4 @@
-# SBX Templates
+# Docker SBX Kits
 
 Sandbox templates for AI coding agents with composable kits.
 

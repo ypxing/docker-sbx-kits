@@ -1,4 +1,4 @@
-# SBX Templates
+# Docker SBX Kits
 
 Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot). Pick an agent, layer in kits for cloud auth or private registries, and run.
 
