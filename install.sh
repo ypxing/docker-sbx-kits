@@ -32,7 +32,16 @@ fi
 
 # ── capture real sbx path ─────────────────────────────────────────────────────
 
-REAL_SBX=$(command -v sbx || true)
+REAL_SBX=""
+WRAPPER_REAL="$(readlink -f "$INSTALL_DIR/sbx" 2>/dev/null || true)"
+# Walk every sbx on PATH; skip our own wrapper to avoid writing a self-referential path
+# (which would cause infinite recursion on any sbx passthrough call on re-install)
+while IFS= read -r candidate; do
+  if [[ "$(readlink -f "$candidate" 2>/dev/null)" != "$WRAPPER_REAL" ]]; then
+    REAL_SBX="$candidate"
+    break
+  fi
+done < <(type -ap sbx 2>/dev/null || true)
 if [[ -z "$REAL_SBX" ]]; then
   warn "Docker sbx CLI not found — sbx passthrough will not work. Install Docker Desktop first."
 fi

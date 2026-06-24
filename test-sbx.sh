@@ -109,7 +109,7 @@ chmod +x "$T3_BIN/sbx"
 COLLISION_OUT=$(PATH="$T3_FAKE_BIN_DIR:$PATH" SBX_KITS_DIR="$T3_INSTALL" SBX_KITS_BIN="$T3_BIN" \
   bash "$T3_INSTALL/install.sh" 2>&1 || true)
 
-assert_contains "$COLLISION_OUT" "not a symlink" "install.sh warns about non-symlink sbx collision"
+assert_contains "$COLLISION_OUT" "exists and is not a symlink" "install.sh warns about non-symlink sbx collision"
 T3_SBX_CONTENT=$(cat "$T3_BIN/sbx")
 if [[ "$T3_SBX_CONTENT" == "not a symlink" ]]; then pass "install.sh does not overwrite non-symlink sbx"; else fail "install.sh overwrote non-symlink sbx"; fi
 
@@ -138,6 +138,34 @@ for subcmd in ls rm stop; do
   OUT=$(bash "$T5_INSTALL/sbx" "$subcmd" 2>&1 || true)
   assert_contains "$OUT" "CALLED:$subcmd" "sbx forwards '$subcmd' via \$SBX"
 done
+
+# ── Test 6: re-run install.sh writes real sbx (not wrapper) to .sbx_path ────────
+T6_DIR="$TMPBASE/t6"
+T6_INSTALL="$T6_DIR/install"
+T6_BIN="$T6_DIR/bin"
+mkdir -p "$T6_DIR" "$T6_BIN"
+make_fake_install_dir "$T6_INSTALL"
+
+T6_FAKE_BIN_DIR="$T6_DIR/fakebin"
+mkdir -p "$T6_FAKE_BIN_DIR"
+make_fake_sbx "$T6_FAKE_BIN_DIR/sbx"
+
+# First install — puts wrapper symlink at T6_BIN/sbx
+PATH="$T6_FAKE_BIN_DIR:$PATH" SBX_KITS_DIR="$T6_INSTALL" SBX_KITS_BIN="$T6_BIN" \
+  bash "$T6_INSTALL/install.sh" >/dev/null 2>&1 || true
+
+# Second install (re-run) — wrapper symlink now precedes fakebin on PATH
+# Without the guard, command -v sbx would find the wrapper and write it to .sbx_path
+PATH="$T6_BIN:$T6_FAKE_BIN_DIR:$PATH" SBX_KITS_DIR="$T6_INSTALL" SBX_KITS_BIN="$T6_BIN" \
+  bash "$T6_INSTALL/install.sh" >/dev/null 2>&1 || true
+
+T6_SBX_PATH=$(cat "$T6_INSTALL/.sbx_path" 2>/dev/null || true)
+# .sbx_path must point to the fake real binary, not to the wrapper
+if [[ "$T6_SBX_PATH" == "$T6_INSTALL/sbx" ]]; then
+  fail "re-install wrote wrapper path to .sbx_path (would cause infinite recursion)"
+else
+  assert_contains "$T6_SBX_PATH" "fakebin/sbx" "re-install .sbx_path points to real sbx (not wrapper)"
+fi
 
 # ── Summary ────────────────────────────────────────────────────────────────────
 echo ""
