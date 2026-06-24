@@ -1,4 +1,5 @@
 .env
+.scratch
 .DS_Store
 agents/*/spec.yaml
 kits/*/spec.yaml
