@@ -139,7 +139,7 @@ EOF
 
 if [[ -n "$EXISTING" ]]; then
   echo "Sandbox '$EXISTING' exists — resuming."
-  "$SBX" run "$AGENT" --kit "$AGENT_DIR/" --kit "$TMPDIR_MERGED/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
+  "$SBX" run "$AGENT" --kit "$AGENT_DIR/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
 else
   kit_args=()
   for d in "${kit_dirs[@]+"${kit_dirs[@]}"}"; do kit_args+=(--kit "$d/"); done

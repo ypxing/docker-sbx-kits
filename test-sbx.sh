@@ -167,29 +167,6 @@ else
   assert_contains "$T6_SBX_PATH" "fakebin/sbx" "re-install .sbx_path points to real sbx (not wrapper)"
 fi
 
-# ── Test 7: resume path passes merged-settings kit ───────────────────────────
-T7_DIR="$TMPBASE/t7"
-T7_INSTALL="$T7_DIR/install"
-mkdir -p "$T7_INSTALL/agents/claude-docker"
-cp "$PROJECT_ROOT/sbx" "$T7_INSTALL/sbx"
-
-# Fake sbx that records all args and pretends a sandbox already exists on 'list'
-cat > "$T7_DIR/fake_sbx_bin" <<'FAKESBX'
-#!/usr/bin/env bash
-if [[ "${1:-}" == "list" ]]; then
-  echo "ID        AGENT           WORKSPACE"
-  echo "abc123    claude-docker   $(pwd)"
-else
-  echo "CALLED:$*"
-fi
-FAKESBX
-chmod +x "$T7_DIR/fake_sbx_bin"
-echo "$T7_DIR/fake_sbx_bin" > "$T7_INSTALL/.sbx_path"
-
-RESUME_OUT=$(bash "$T7_INSTALL/sbx" 2>&1 || true)
-KIT_COUNT=$(grep -o -- '--kit' <<< "$RESUME_OUT" | wc -l | tr -d ' ')
-assert_eq "$KIT_COUNT" "2" "resume path passes two --kit flags (agent + merged-settings)"
-
 # ── Summary ────────────────────────────────────────────────────────────────────
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
