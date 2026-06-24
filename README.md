@@ -1,14 +1,19 @@
 # Docker SBX Kits
 
-Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot). Pick an agent, layer in kits for cloud auth or private registries, and run.
+Run an AI coding agent in a Docker sandbox in one command — your project directory mounted, your cloud credentials wired up, your private registries accessible, and nothing leaking out of the container. Each sandbox is a composable combination of an agent template and optional add-on kits that snap together at create time, so you get exactly the environment you need without touching Dockerfiles or config files.
 
-## Prerequisites
+## 30-second demo
 
-- **`sbx` CLI** — [Docker Sandbox](https://docs.docker.com/ai/sandboxes/)
-- **`jq`** — `brew install jq`
-- **`envsubst`** — `brew install gettext`
+```bash
+cd /your/project
+sbx claude-docker --kit aws-bedrock-sso
+```
 
-## Agents
+You land in a Claude Code session with your project mounted and AWS Bedrock wired up. No long-lived keys, no manual credential plumbing — the kit handles it.
+
+## Mental model
+
+Pick one **agent** — it defines which AI tool runs and what the sandbox looks like. Layer on **kits** for anything extra: cloud auth, private registries, pre-installed workflows. Agents and kits are plain YAML and JSON fragments; `sbx` deep-merges them at sandbox create time. One agent, any number of kits, one command.
 
 | Agent | Docker inside? |
 |---|---|
@@ -19,7 +24,13 @@ Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot).
 
 Pick `*-docker` when your project needs to build or run containers. Pick `*-sbx` for a lighter footprint.
 
-## Quick start
+## Setup
+
+### Prerequisites
+
+- **`sbx` CLI** — [Docker Sandbox](https://docs.docker.com/ai/sandboxes/)
+- **`jq`** — `brew install jq`
+- **`envsubst`** — `brew install gettext`
 
 **1. Install (or update)**
 
@@ -36,34 +47,34 @@ cd /path/to/project
 Claude, no extras:
 
 ```bash
-sbx-run
+sbx
 ```
 
 Claude with AWS Bedrock:
 
 ```bash
-sbx-run claude-docker --kit aws-bedrock-sso
+sbx claude-docker --kit aws-bedrock-sso
 ```
 
 Claude with AWS Bedrock + private NPM:
 
 ```bash
-sbx-run claude-docker --kit aws-bedrock-sso --kit npm-auth
+sbx claude-docker --kit aws-bedrock-sso --kit npm-auth
 ```
 
 GitHub Copilot:
 
 ```bash
-sbx-run copilot-docker
+sbx copilot-docker
 ```
 
 List all available kits:
 
 ```bash
-sbx-run --list-kits
+sbx --list-kits
 ```
 
-`sbx-run` detects whether a sandbox already exists for the current directory:
+`sbx` detects whether a sandbox already exists for the current directory:
 - **First run** — creates sandbox with agent + specified kits
 - **Subsequent runs** — resumes existing sandbox (kits ignored after create)
 
@@ -100,14 +111,14 @@ echo $(security find-generic-password -s 'npm_token' -w) | sbx secret set -g npm
 Bootstraps the [coding-crew](https://github.com/ypxing/coding-crew) toolchain into the sandbox, giving the agent a pre-wired `/grill-me` workflow and the `/afk` autonomous coder.
 
 ```bash
-sbx-run claude-docker --kit claude-wk
-sbx-run copilot-docker --kit copilot-wk
+sbx claude-docker --kit claude-wk
+sbx copilot-docker --kit copilot-wk
 ```
 
 Kits can be combined:
 
 ```bash
-sbx-run claude-docker --kit aws-bedrock-sso --kit claude-wk
+sbx claude-docker --kit aws-bedrock-sso --kit claude-wk
 ```
 
 ## Structure
@@ -124,7 +135,7 @@ kits/
   claude-wk/                # coding-crew workflows for Claude
   copilot-wk/               # coding-crew workflows for Copilot
 setup.sh                    # envsubst over all *.tpl files
-sbx-run                     # smart sbx run wrapper
+sbx                     # smart sbx run wrapper
 ```
 
 ## Adding a new kit
@@ -132,8 +143,8 @@ sbx-run                     # smart sbx run wrapper
 ```
 kits/<name>/
   spec.yaml                 # or spec.src.yaml if it needs envsubst
-  settings.fragment.json    # optional — merged into settings.json by sbx-run
+  settings.fragment.json    # optional — merged into settings.json by sbx
   files/home/               # optional — injected into sandbox ~/
 ```
 
-Run `sbx-run --list-kits` to confirm it's discovered.
+Run `sbx --list-kits` to confirm it's discovered.

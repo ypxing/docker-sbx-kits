@@ -61,7 +61,7 @@ Before starting, make sure you have:
 ## Step 1 — Install and configure credentials
 
 ```bash
-# Install (or update) — clones to ~/.sbx-kits and symlinks sbx-run onto your PATH
+# Install (or update) — clones to ~/.sbx-kits and symlinks sbx onto your PATH
 curl -fsSL https://raw.githubusercontent.com/ypxing/docker-sbx-kits/main/install.sh | bash
 ```
 
@@ -86,15 +86,15 @@ Then generate all `spec.yaml` files:
 
 ## Step 2 — Choose your platform
 
-Pick once based on your toolchain. This determines which `sbx-run` command you use every day.
+Pick once based on your toolchain. This determines which `sbx` command you use every day.
 
 ```
  Do you use GitHub Copilot or Claude Code?
  │
- ├── Claude Code  ──►  sbx-run claude-sbx
+ ├── Claude Code  ──►  sbx claude-sbx
  │                     Parallel coder agents, git worktree isolation per issue
  │
- └── Copilot      ──►  sbx-run copilot-sbx
+ └── Copilot      ──►  sbx copilot-sbx
                        Sequential coder subagent, simpler setup
 ```
 
@@ -106,7 +106,7 @@ See [Platform comparison](#platform-comparison) if you're unsure which to pick.
 
 # Part 2 — Day-to-day workflow
 
-> Before every session: run `aws sso login --profile sso-live` if your SSO token has expired, then `sbx-run <platform>`.
+> Before every session: run `aws sso login --profile sso-live` if your SSO token has expired, then `sbx <platform>`.
 
 ## Step 3 — Plan your feature
 
@@ -415,7 +415,7 @@ your-project/
 ### Start a new feature (bundled tools only)
 
 ```bash
-sbx-run claude-sbx
+sbx claude-sbx
 # Write .scratch/<feature>/issues/01-*.md manually, set Status: ready-for-agent
 > /afk-sprint
 ```
@@ -423,7 +423,7 @@ sbx-run claude-sbx
 ### Start a new feature (with planning skills)
 
 ```bash
-sbx-run claude-sbx
+sbx claude-sbx
 > /grill-me
 > "I want to add X to our API"
 > /to-prd
@@ -465,7 +465,7 @@ Surfaces refactoring opportunities informed by your CONTEXT.md and ADRs.
 | Issue keeps re-running each round               | Worker left it `partial`                 | Read its `## Progress` section, resolve the blocker, then re-run           |
 | Sprint stalls after 2 rounds                    | All remaining issues are `blocked`       | Read each `## Blocked` section, resolve dependencies manually, then re-run |
 | `setup.sh` fails                                | Missing `.env` variable                  | Check `~/.sbx-kits/.env` — copy from `.env.example` and fill every required field |
-| `sbx-run` fails auth                            | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx-run`                    |
+| `sbx` fails auth                            | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx`                    |
 | Agent implements wrong thing                    | Issue acceptance criteria are ambiguous  | Rewrite criteria as testable bullet points, then re-run                    |
 | `/grill-me`, `/to-prd`, `/to-issues` do nothing | Command not typed correctly              | Type the command exactly — e.g. `/grill-me` at the start of a new line     |
 

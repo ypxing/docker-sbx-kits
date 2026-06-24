@@ -7,7 +7,7 @@ Sandbox templates for AI coding agents with composable kits.
 - `agents/` — agent templates (`claude-docker`, `claude-sbx`, `copilot-docker`, `copilot-sbx`)
 - `kits/` — optional add-ons merged in at sandbox create time (`aws-bedrock-sso`, `npm-auth`)
 - `setup.sh` — runs `envsubst` over all `*.tpl` files under `agents/` and `kits/`
-- `sbx-run` — smart wrapper: detects existing sandbox, merges `settings.fragment.json` files
+- `sbx` — smart wrapper: detects existing sandbox, merges `settings.fragment.json` files
 
 ## Key rules
 
@@ -20,7 +20,7 @@ Sandbox templates for AI coding agents with composable kits.
 
 ## Settings fragments
 
-`sbx-run` deep-merges `settings.fragment.json` from the agent dir then each kit dir (in order):
+`sbx` deep-merges `settings.fragment.json` from the agent dir then each kit dir (in order):
 - Objects: recursively merged, last kit wins per key
 - Arrays (`permissions.allow/deny`, `hooks.*`): concatenated and deduped
 - Scalars: last kit wins
