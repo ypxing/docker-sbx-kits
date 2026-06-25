@@ -74,6 +74,20 @@ fi
 ln -sf "$INSTALL_DIR/sbx" "$BIN_DIR/sbx"
 success "sbx → $BIN_DIR/sbx"
 
+# ── PATH order check ──────────────────────────────────────────────────────────
+
+WRAPPER_PATH="$BIN_DIR/sbx"
+FIRST_SBX="$(type -p sbx 2>/dev/null || true)"
+# Resolve symlinks for comparison (our wrapper may not be on PATH yet in this shell)
+FIRST_REAL="$(readlink -f "$FIRST_SBX" 2>/dev/null || true)"
+WRAPPER_REAL="$(readlink -f "$WRAPPER_PATH" 2>/dev/null || true)"
+if [[ -n "$FIRST_SBX" && "$FIRST_REAL" != "$WRAPPER_REAL" ]]; then
+  warn "Another 'sbx' ($FIRST_SBX) appears before $BIN_DIR in PATH."
+  warn "The wrapper must come first or kit/settings merging will be skipped."
+  warn "Fix: add this to your shell profile (~/.zshrc or ~/.bashrc):"
+  warn "  export PATH=\"$BIN_DIR:\$PATH\""
+fi
+
 # ── .env setup ────────────────────────────────────────────────────────────────
 
 ENV_FILE="$INSTALL_DIR/.env"
