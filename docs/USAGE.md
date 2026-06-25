@@ -6,7 +6,7 @@ This is the full reference for skills, agents, and the issue tracker. For repo s
 
 ## TL;DR
 
-After `sbx`, the full autonomous workflow is three steps:
+After `sbx-run`, the full autonomous workflow is three steps:
 
 ```
 Step 1 — Plan
@@ -115,7 +115,7 @@ Every feature follows the same three phases regardless of platform:
 ### Getting started
 
 ```bash
-sbx claude-docker
+sbx-run claude-docker
 ```
 
 You land in a Claude Code session with all bundled skills and agents preloaded. Type `/command-name` to invoke any skill.
@@ -250,7 +250,7 @@ Reads the issue, explores the codebase, installs deps, runs a TDD loop, verifies
 ### Getting started
 
 ```bash
-sbx copilot-sbx
+sbx-run copilot-sbx
 ```
 
 You land in a Copilot chat session. Invoke agents with `@agent-name`.

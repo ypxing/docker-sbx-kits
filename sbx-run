@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Usage: sbx [run] [<agent>] [--kit <name>] ... [-- <sbx-args>]
-#        sbx <subcommand> [args...]   # proxied to: sbx <subcommand> [args...]
+# Usage: sbx-run [run] [<agent>] [--kit <name>] ... [-- <sbx-args>]
+#        sbx-run <subcommand> [args...]   # proxied to: sbx <subcommand> [args...]
 #
 #   run          - optional; smart wrapper around sbx run (default when no subcommand)
 #   agent        - agent from agents/ (default: claude-docker)
@@ -24,11 +24,6 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 AGENTS_DIR="$SCRIPT_DIR/agents"
 KITS_DIR="$SCRIPT_DIR/kits"
 
-# Read the real Docker sbx binary path (captured at install time)
-SBX=$(cat "$SCRIPT_DIR/.sbx_path" 2>/dev/null) \
-  || { echo "Error: sbx path not found. Run install.sh first." >&2; exit 1; }
-[[ -z "$SBX" ]] && { echo "Error: Docker sbx CLI not found. Install it first." >&2; exit 1; }
-
 command -v jq >/dev/null || { echo "Error: jq not found. Install: brew install jq"; exit 1; }
 
 list_kits() {
@@ -42,7 +37,7 @@ list_kits() {
 # Route non-run subcommands directly to sbx
 case "${1:-}" in
   ls|list|rm|stop|exec|cp|create|diagnose|kit|ports|reset|secret|template|version|policy|login|logout|completion)
-    exec "$SBX" "$@" ;;
+    exec sbx "$@" ;;
   run)
     shift ;;  # consume 'run'; remaining args handled below
   --list-kits|--kit|-*)
@@ -62,7 +57,7 @@ case "${1:-}" in
         echo "Tip: use 'sbx run <agent>' directly if you don't need the kit/settings merge." >&2
         exit 1
       fi
-      exec "$SBX" "$@"
+      exec sbx "$@"
     fi ;;
 esac
 
@@ -99,7 +94,7 @@ for kit in "${extra_kits[@]+"${extra_kits[@]}"}"; do
 done
 
 WORKSPACE="$(pwd)"
-EXISTING=$("$SBX" list 2>/dev/null | awk -v a="$AGENT" -v w="$WORKSPACE" 'NR>1 && $2==a && $NF==w {print $1}')
+EXISTING=$(sbx list 2>/dev/null | awk -v a="$AGENT" -v w="$WORKSPACE" 'NR>1 && $2==a && $NF==w {print $1}')
 
 # Merge settings fragments from agent + kits (in order) using jq
 # Objects are deep-merged; arrays are concatenated and deduped
@@ -139,12 +134,12 @@ EOF
 
 if [[ -n "$EXISTING" ]]; then
   echo "Sandbox '$EXISTING' exists — resuming."
-  "$SBX" run "$AGENT" --kit "$AGENT_DIR/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
+  sbx run "$AGENT" --kit "$AGENT_DIR/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
 else
   kit_args=()
   for d in "${kit_dirs[@]+"${kit_dirs[@]}"}"; do kit_args+=(--kit "$d/"); done
   [[ ${#kit_dirs[@]} -gt 0 ]] \
     && echo "Creating sandbox for $AGENT at $WORKSPACE with ${#kit_dirs[@]} kit(s)." \
     || echo "Creating sandbox for $AGENT at $WORKSPACE."
-  "$SBX" run "$AGENT" --kit "$AGENT_DIR/" "${kit_args[@]+"${kit_args[@]}"}" --kit "$TMPDIR_MERGED/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
+  sbx run "$AGENT" --kit "$AGENT_DIR/" "${kit_args[@]+"${kit_args[@]}"}" --kit "$TMPDIR_MERGED/" "${passthrough_args[@]+"${passthrough_args[@]}"}"
 fi
