@@ -10,12 +10,12 @@ Composable sandbox templates for AI coding agents (Claude Code, GitHub Copilot).
 
 ## Agents
 
-| Agent | Docker inside? |
-|---|---|
-| `claude-docker` | yes |
-| `claude-sbx` | no |
-| `copilot-docker` | yes |
-| `copilot-sbx` | no |
+| Agent            | Docker inside? |
+| ---------------- | -------------- |
+| `claude-docker`  | yes            |
+| `claude-sbx`     | no             |
+| `copilot-docker` | yes            |
+| `copilot-sbx`    | no             |
 
 Pick `*-docker` when your project needs to build or run containers. Pick `*-sbx` for a lighter footprint.
 
@@ -64,6 +64,7 @@ sbx-run --list-kits
 ```
 
 `sbx-run` detects whether a sandbox already exists for the current directory:
+
 - **First run** — creates sandbox with agent + specified kits
 - **Subsequent runs** — resumes existing sandbox (kits ignored after create)
 
@@ -75,15 +76,15 @@ Mounts short-lived AWS credentials from your SSO session and routes Claude model
 
 **First-time setup:** edit `~/.sbx-kits/.env` with your SSO values, then run `~/.sbx-kits/setup.sh`.
 
-| Variable | Required | Description |
-|---|---|---|
-| `SSO_SUBDOMAIN` | yes | AWS SSO subdomain (before `.awsapps.com`) |
-| `SSO_REGION` | yes | AWS region |
-| `SSO_ROLE_NAME` | yes | IAM role name |
-| `SSO_ACCOUNT_ID` | yes | AWS account ID |
-| `BEDROCK_SONNET_MODEL` | no | Default: `au.anthropic.claude-sonnet-4-6[1m]` |
-| `BEDROCK_OPUS_MODEL` | no | Default: `au.anthropic.claude-opus-4-6-v1[1m]` |
-| `BEDROCK_HAIKU_MODEL` | no | Default: `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Variable               | Required | Description                                            |
+| ---------------------- | -------- | ------------------------------------------------------ |
+| `SSO_SUBDOMAIN`        | yes      | AWS SSO subdomain (before `.awsapps.com`)              |
+| `SSO_REGION`           | yes      | AWS region                                             |
+| `SSO_ROLE_NAME`        | yes      | IAM role name                                          |
+| `SSO_ACCOUNT_ID`       | yes      | AWS account ID                                         |
+| `BEDROCK_SONNET_MODEL` | no       | Default: `au.anthropic.claude-sonnet-4-6[1m]`          |
+| `BEDROCK_OPUS_MODEL`   | no       | Default: `au.anthropic.claude-opus-4-6-v1[1m]`         |
+| `BEDROCK_HAIKU_MODEL`  | no       | Default: `au.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
 ### `npm-auth` — Secure NPM token
 

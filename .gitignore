@@ -1,4 +1,5 @@
 .env
+.sbx_path
 .scratch
 .DS_Store
 agents/*/spec.yaml

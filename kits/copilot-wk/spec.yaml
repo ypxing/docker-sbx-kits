@@ -11,6 +11,6 @@ network:
 commands:
   install:
     - command: |
-        curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- copilot --version v1.8.4
+        curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- copilot --version v1.8.5
       user: "1000"
       description: "Install coding-crew"
