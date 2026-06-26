@@ -4,6 +4,10 @@ name: copilot-wk
 displayName: Copilot-Workspace
 description: Workspace mixin for Copilot. Provides a heads-up display for Copilot agents, showing model info, usage stats, and more.
 
+environment:
+  variables:
+    RTK_TELEMETRY_DISABLED: "1"
+
 network:
   allowedDomains:
     - "raw.githubusercontent.com"
@@ -12,5 +16,6 @@ commands:
   install:
     - command: |
         curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- copilot --version v1.8.6
+        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
       user: "1000"
-      description: "Install coding-crew"
+      description: "Install coding-crew, rtk"

@@ -4,6 +4,10 @@ name: claude-wk
 displayName: Claude-Workspace
 description: Workspace mixin for Claude. Provides a heads-up display for Claude agents, showing model info, usage stats, and more.
 
+environment:
+  variables:
+    RTK_TELEMETRY_DISABLED: "1"
+
 network:
   allowedDomains:
     - "raw.githubusercontent.com"
@@ -12,5 +16,6 @@ commands:
   install:
     - command: |
         curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- claude --version v1.8.6
+        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
       user: "1000"
-      description: "Install coding-crew"
+      description: "Install coding-crew, rtk"
