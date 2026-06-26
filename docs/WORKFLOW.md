@@ -242,11 +242,11 @@ Gitignored files like `.env` or `node_modules/` aren't present in worktrees by d
 ### Copilot
 
 ```
-> @crew-afk
+> /crew-afk
 ```
 
 ```
-@crew-afk (agent — runs the loop itself)
+/crew-afk (agent — runs the loop itself)
 │
 ├─ Records HEAD SHA for review scope
 │
@@ -261,7 +261,7 @@ Gitignored files like `.env` or `node_modules/` aren't present in worktrees by d
 │   │ subagent  │      │ subagent  │      │ subagent  │
 │   └───────────┘      └───────────┘      └───────────┘
 │
-├─ @code-reviewer runs at end (mandatory — even if sprint stalled)
+├─ /code-reviewer runs at end (mandatory — even if sprint stalled)
 │
 └─ Stops after 2 consecutive rounds with zero completions
 ```
@@ -393,7 +393,7 @@ When you prefer to implement issues yourself, one at a time.
 |                                                                                                                                                                                                                                                                                                                    | Do the actual file editing, test running, and committing.                                     |
 | **Bundled examples:**<br>• `/crew-afk` → runs the sprint<br>• `/crew-grill` or `/crew-brainstorm` → plan and design<br>• `/solve-issue` → implements 1 issue<br>• `/address-pr-comments` → implements PR review comments<br>• `/configure-tracker` → select issue tracker template<br>• `/tdd` → shapes test style | **Examples:**<br>• `crew-coder` → implements issues<br>• `crew-code-reviewer` → reviews diffs |
 
-> Note: `/crew-afk` is a **skill** in the Claude sandbox (it drives the workflow engine). `@crew-afk` in Copilot is an **agent** (it runs the sprint loop itself). Same name, different primitive on each platform. `crew-coder` and `crew-code-reviewer` are the underlying agents that do the actual work.
+> Note: `/crew-afk` is a **skill** in the Claude sandbox (it drives the workflow engine). `/crew-afk` in Copilot is an **agent** (it runs the sprint loop itself). Same name, different primitive on each platform. `crew-coder` and `crew-code-reviewer` are the underlying agents that do the actual work.
 
 ---
 
@@ -404,7 +404,7 @@ When you prefer to implement issues yourself, one at a time.
 | **Sprint model**      | Parallel (up to 8 at once)          | Sequential (one issue at a time)           |
 | **Issue isolation**   | Git worktree per coder agent        | Shared repo (no isolation)                 |
 | **Planning**          | `/crew-grill` or `/crew-brainstorm` | `/crew-grill` or `/crew-brainstorm`        |
-| **Sprint invocation** | `/crew-afk` (skill)                 | `@crew-afk` (agent)                        |
+| **Sprint invocation** | `/crew-afk` (skill)                 | `/crew-afk` (agent)                        |
 | **Manual invocation** | `/solve-issue`                      | `/solve-issue` (via Claude in the sandbox) |
 | **Code review**       | Automatic at sprint end             | Automatic at protocol exit                 |
 | **Best for**          | Large sprints, 5+ issues            | Smaller loads, already in Copilot          |
