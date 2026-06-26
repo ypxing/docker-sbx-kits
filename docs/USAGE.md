@@ -27,7 +27,7 @@ For a single issue hands-on: `/solve-issue ".scratch/.../issues/01-*.md"`
 | I want to…                   | Use                       |
 | ---------------------------- | ------------------------- |
 | Many issues (5+) in parallel | Claude Code (`/crew-afk`) |
-| Stay in my Copilot workspace | Copilot (`@crew-afk`)     |
+| Stay in my Copilot workspace | Copilot (`/crew-afk`)     |
 | Implement one issue manually | Either — `/solve-issue`   |
 
 ---
@@ -98,7 +98,7 @@ Every feature follows the same three phases regardless of platform:
 
 **Plan** — Create issue files that describe what to build. Use the bundled planning skills (`/crew-grill`, `/to-prd`, `/to-issues`) or write them manually (see [Issue Tracker Conventions](#issue-tracker-conventions) for the format).
 
-**Implement** — Either pick issues one by one with `/solve-issue`, or hand them all off to `/crew-afk` (Claude) or `@crew-afk` (Copilot) for autonomous implementation.
+**Implement** — Either pick issues one by one with `/solve-issue`, or hand them all off to `/crew-afk` (Claude) or `/crew-afk` (Copilot) for autonomous implementation.
 
 **Review** — The code reviewer agent flags security, quality, and correctness concerns. Triage findings with `/crew-address-findings` or handle external PR feedback with `/address-pr-comments` (if installed).
 
@@ -253,9 +253,9 @@ Reads the issue, explores the codebase, installs deps, runs a TDD loop, verifies
 sbx-run copilot-sbx
 ```
 
-You land in a Copilot chat session. Invoke agents with `@agent-name`.
+You land in a Copilot chat session. Invoke agents with `/agent-name`.
 
-### Autonomous sprint (`@crew-afk`)
+### Autonomous sprint (`/crew-afk`)
 
 Same lifecycle as Claude, but with a different execution model.
 
@@ -266,13 +266,13 @@ Identical to Claude — create issue files in `.scratch/` with `Status: ready-fo
 **Step 2 — Run the sprint**
 
 ```
-> @crew-afk
+> /crew-afk
 ```
 
 What happens behind the scenes:
 
 ```
-@crew-afk (orchestrator)
+/crew-afk (orchestrator)
 │
 ├── Records HEAD SHA for code review scope
 │
@@ -290,7 +290,7 @@ What happens behind the scenes:
 │   │                                                         │
 │   └─────────────────────────────────────────────────────────┘
 │
-├── @code-reviewer runs at end (mandatory — runs even if sprint stalls)
+├── /code-reviewer runs at end (mandatory — runs even if sprint stalls)
 │
 └── Stops if 2 consecutive rounds produce zero completions
 ```
@@ -299,14 +299,14 @@ Key differences from Claude:
 
 - **Sequential**: one issue at a time (simpler but slower for large sprints)
 - **No isolation**: each `coder` subagent works directly in the shared repo (a failure in issue N could affect issue N+1)
-- **Subagent per issue**: `@crew-afk` dispatches to `coder` for each issue, then does housekeeping itself
+- **Subagent per issue**: `/crew-afk` dispatches to `coder` for each issue, then does housekeeping itself
 
 **Step 3 — Review**
 
 The code reviewer runs automatically at protocol exit. You can also invoke it manually:
 
 ```
-> @code-reviewer
+> /code-reviewer
 ```
 
 Then triage findings:
@@ -414,10 +414,10 @@ Why this issue exists and any relevant background.
 | Stress-test a design †        | `/crew-grill`                    | `/crew-grill`                    |
 | Create a PRD †                | `/to-prd`                        | `/to-prd`                        |
 | Break PRD into issues †       | `/to-issues`                     | `/to-issues`                     |
-| Run an autonomous sprint      | `/crew-afk`                      | `@crew-afk`                      |
+| Run an autonomous sprint      | `/crew-afk`                      | `/crew-afk`                      |
 | Implement one issue manually  | `/solve-issue`                   | `/solve-issue`                   |
 | TDD style for current session | `/tdd`                           | `/tdd`                           |
-| Review sprint output          | automatic                        | automatic (`@code-reviewer`)     |
+| Review sprint output          | automatic                        | automatic (`/code-reviewer`)     |
 | Triage code review            | `/crew-address-findings`         | `/crew-address-findings`         |
 | Handle PR feedback †          | `/address-pr-comments`           | `/address-pr-comments`           |
 | Improve architecture †        | `/improve-codebase-architecture` | `/improve-codebase-architecture` |
@@ -430,7 +430,7 @@ Why this issue exists and any relevant background.
 | -------------------- | --------------------------------------------- | -------------------------- |
 | Sprint execution     | Parallel (batches of ~8)                      | Sequential (one at a time) |
 | Issue isolation      | Git worktree per `coder` agent                | Shared repo                |
-| Implement invocation | `/crew-afk` (auto) or `/solve-issue` (manual) | `@crew-afk` (auto)         |
+| Implement invocation | `/crew-afk` (auto) or `/solve-issue` (manual) | `/crew-afk` (auto)         |
 | Code review trigger  | Automatic at sprint end                       | Automatic at protocol exit |
 | Agent definitions    | `.claude/agents/`                             | `.github/agents/`          |
 | Skill definitions    | `.claude/skills/` (shared)                    | `.claude/skills/` (shared) |
