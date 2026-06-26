@@ -8,3 +8,4 @@ kits/*/spec.yaml
 !kits/copilot-wk/spec.yaml
 kits/aws-bedrock-sso/settings.fragment.json
 kits/aws-bedrock-sso/files/home/.aws/config
+.claude/worktrees
