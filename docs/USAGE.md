@@ -14,21 +14,21 @@ Step 1 — Plan
   (manually, or with planning skills — see Skills below)
 
 Step 2 — Sprint (hands-off)
-  > /afk-sprint           ← implements all ready issues in parallel, commits, reviews
+  > /crew-afk           ← implements all ready issues in parallel, commits, reviews
 
 Step 3 — Triage
-  > /address-code-review  ← apply review findings with TDD
+  > /crew-address-findings  ← apply review findings with TDD
 ```
 
 For a single issue hands-on: `/solve-issue ".scratch/.../issues/01-*.md"`
 
 ### Which platform?
 
-| I want to…                   | Use                         |
-| ---------------------------- | --------------------------- |
-| Many issues (5+) in parallel | Claude Code (`/afk-sprint`) |
-| Stay in my Copilot workspace | Copilot (`@afk-sprint`)     |
-| Implement one issue manually | Either — `/solve-issue`     |
+| I want to…                   | Use                       |
+| ---------------------------- | ------------------------- |
+| Many issues (5+) in parallel | Claude Code (`/crew-afk`) |
+| Stay in my Copilot workspace | Copilot (`@crew-afk`)     |
+| Implement one issue manually | Either — `/solve-issue`   |
 
 ---
 
@@ -48,15 +48,15 @@ Reusable instructions that guide how the AI approaches a task. Invoked via `/sla
 
 | Command                          | Purpose                                                                      |
 | -------------------------------- | ---------------------------------------------------------------------------- |
-| `/grill-me`                      | Stress-test a plan or design with relentless questions                       |
+| `/crew-grill`                    | Stress-test a plan or design with relentless questions                       |
 | `/grill-with-docs`               | Challenge a plan against your CONTEXT.md and ADRs                            |
 | `/to-prd`                        | Formalise conversation context into a PRD file                               |
 | `/to-issues`                     | Break a PRD into numbered issue files                                        |
-| `/afk-sprint`                    | Autonomous sprint — implements all `ready-for-agent` issues hands-off        |
+| `/crew-afk`                      | Autonomous sprint — implements all `ready-for-agent` issues hands-off        |
 | `/solve-issue`                   | Implement one issue end-to-end: explore → TDD → verify → commit              |
 | `/tdd`                           | TDD style guide — shapes failing-test-first approach for the current session |
 | `/karpathy-guidelines`           | Apply LLM coding pitfall avoidance during writing/review                     |
-| `/address-code-review`           | Triage local sprint review findings, implement valid ones with TDD           |
+| `/crew-address-findings`         | Triage local sprint review findings, implement valid ones with TDD           |
 | `/address-pr-comments`           | Fetch external PR review comments, challenge each, implement valid ones      |
 | `/improve-codebase-architecture` | Surface refactoring opportunities informed by your domain model              |
 
@@ -64,7 +64,7 @@ Reusable instructions that guide how the AI approaches a task. Invoked via `/sla
 
 Autonomous workers that operate independently. Their structure differs by platform:
 
-- **Claude Code**: defined in `.claude/agents/` with YAML frontmatter specifying model, isolation mode, and available tools. Spawned by `/afk-sprint` via a workflow engine.
+- **Claude Code**: defined in `.claude/agents/` with YAML frontmatter specifying model, isolation mode, and available tools. Spawned by `/crew-afk` via a workflow engine.
 - **GitHub Copilot**: defined in `.github/agents/` as standalone `.agent.md` files. Invoked via `@agent-name` in chat.
 
 ### Issue Tracker
@@ -85,22 +85,22 @@ Every feature follows the same three phases regardless of platform:
 │   Create issue         ┌───────────┐           ┌───────────────┐            │
 │   files manually  ─┐   │           │           │ code-reviewer │            │
 │   (or with         │   │  AUTO:    │           └───────┬───────┘            │
-│   optional         ├──►│  /afk-    │──────────────────►│                    │
-│   planning         │   │  sprint   │                   ▼                    │
-│   skills)         ─┘   │           │           ┌───────────────┐            │
-│                        │  MANUAL:  │           │ /address-code │            │
-│                        │  /solve-  │           │    -review    │            │
-│                        │   issue   │           └───────────────┘            │
+│   optional         ├──►│  AUTO:    │──────────────────►│                    │
+│   planning         │   │ /crew-afk │                   ▼                    │
+│   skills)         ─┘   │           │           ┌────────────────────┐       │
+│                        │  MANUAL:  │           │ /crew-address-     │       │
+│                        │  /solve-  │           │   findings         │       │
+│                        │   issue   │           └────────────────────┘       │
 │                        └───────────┘                                        │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Plan** — Create issue files that describe what to build. Use the bundled planning skills (`/grill-me`, `/to-prd`, `/to-issues`) or write them manually (see [Issue Tracker Conventions](#issue-tracker-conventions) for the format).
+**Plan** — Create issue files that describe what to build. Use the bundled planning skills (`/crew-grill`, `/to-prd`, `/to-issues`) or write them manually (see [Issue Tracker Conventions](#issue-tracker-conventions) for the format).
 
-**Implement** — Either pick issues one by one with `/solve-issue`, or hand them all off to `/afk-sprint` (Claude) or `@afk-sprint` (Copilot) for autonomous implementation.
+**Implement** — Either pick issues one by one with `/solve-issue`, or hand them all off to `/crew-afk` (Claude) or `@crew-afk` (Copilot) for autonomous implementation.
 
-**Review** — The code reviewer agent flags security, quality, and correctness concerns. Triage findings with `/address-code-review` or handle external PR feedback with `/address-pr-comments` (if installed).
+**Review** — The code reviewer agent flags security, quality, and correctness concerns. Triage findings with `/crew-address-findings` or handle external PR feedback with `/address-pr-comments` (if installed).
 
 ---
 
@@ -120,7 +120,7 @@ sbx-run claude-docker
 
 You land in a Claude Code session with all bundled skills and agents preloaded. Type `/command-name` to invoke any skill.
 
-### Autonomous sprint (`/afk-sprint`)
+### Autonomous sprint (`/crew-afk`)
 
 The fastest path from issues to merged code. You prepare the work, walk away, and come back to results.
 
@@ -153,13 +153,13 @@ We need per-client rate limiting at the API gateway layer.
 **Step 2 — Run the sprint**
 
 ```
-> /afk-sprint
+> /crew-afk
 ```
 
 What happens behind the scenes:
 
 ```
-/afk-sprint (orchestrator)
+/crew-afk (orchestrator)
 │
 ├── Scans .scratch/ for ready-for-agent issues
 │   Skips issues whose "Blocked by" deps are not yet in done/
@@ -197,7 +197,7 @@ Key properties:
 **Step 3 — Triage the review**
 
 ```
-> /address-code-review
+> /crew-address-findings
 ```
 
 Claude reads the review findings, challenges weak ones, implements valid fixes with TDD, and commits.
@@ -230,12 +230,12 @@ Reads the issue, explores the codebase, installs deps, runs a TDD loop, verifies
 
 ### Internals
 
-| Component     | Location                                                        |
-| ------------- | --------------------------------------------------------------- |
-| Skills        | `.claude/skills/<name>/SKILL.md`                                |
-| Agents        | `.claude/agents/{coder,code-reviewer}.md`                       |
-| Isolation     | Each `coder` agent runs in a dedicated git worktree             |
-| Orchestration | `/afk-sprint` skill drives a workflow engine that spawns agents |
+| Component     | Location                                                      |
+| ------------- | ------------------------------------------------------------- |
+| Skills        | `.claude/skills/<name>/SKILL.md`                              |
+| Agents        | `.claude/agents/{coder,code-reviewer}.md`                     |
+| Isolation     | Each `coder` agent runs in a dedicated git worktree           |
+| Orchestration | `/crew-afk` skill drives a workflow engine that spawns agents |
 
 ---
 
@@ -255,7 +255,7 @@ sbx-run copilot-sbx
 
 You land in a Copilot chat session. Invoke agents with `@agent-name`.
 
-### Autonomous sprint (`@afk-sprint`)
+### Autonomous sprint (`@crew-afk`)
 
 Same lifecycle as Claude, but with a different execution model.
 
@@ -266,13 +266,13 @@ Identical to Claude — create issue files in `.scratch/` with `Status: ready-fo
 **Step 2 — Run the sprint**
 
 ```
-> @afk-sprint
+> @crew-afk
 ```
 
 What happens behind the scenes:
 
 ```
-@afk-sprint (orchestrator)
+@crew-afk (orchestrator)
 │
 ├── Records HEAD SHA for code review scope
 │
@@ -299,7 +299,7 @@ Key differences from Claude:
 
 - **Sequential**: one issue at a time (simpler but slower for large sprints)
 - **No isolation**: each `coder` subagent works directly in the shared repo (a failure in issue N could affect issue N+1)
-- **Subagent per issue**: `@afk-sprint` dispatches to `coder` for each issue, then does housekeeping itself
+- **Subagent per issue**: `@crew-afk` dispatches to `coder` for each issue, then does housekeeping itself
 
 **Step 3 — Review**
 
@@ -312,7 +312,7 @@ The code reviewer runs automatically at protocol exit. You can also invoke it ma
 Then triage findings:
 
 ```
-> /address-code-review
+> /crew-address-findings
 ```
 
 ### Using skills
@@ -321,7 +321,7 @@ The Copilot sandbox includes the same `.claude/skills/` directory. The bundled `
 
 ```
 > /solve-issue ".scratch/.../issues/01-*.md"
-> /address-code-review
+> /crew-address-findings
 > /tdd
 ```
 
@@ -339,12 +339,12 @@ The Copilot sandbox includes the same `.claude/skills/` directory. The bundled `
 
 ### Internals
 
-| Component       | Location                                                                  |
-| --------------- | ------------------------------------------------------------------------- |
-| Agents          | `.github/agents/{afk-sprint,coder,code-reviewer}.agent.md`                |
-| Skills (shared) | `.claude/skills/<name>/SKILL.md`                                          |
-| Isolation       | None — all agents work in the shared repo                                 |
-| Orchestration   | `afk-sprint` agent dispatches each issue to `coder` subagent sequentially |
+| Component       | Location                                                                     |
+| --------------- | ---------------------------------------------------------------------------- |
+| Agents          | `.github/agents/{crew-afk,crew-coder,crew-code-reviewer}.agent.md`           |
+| Skills (shared) | `.claude/skills/<name>/SKILL.md`                                             |
+| Isolation       | None — all agents work in the shared repo                                    |
+| Orchestration   | `crew-afk` agent dispatches each issue to `crew-coder` subagent sequentially |
 
 ---
 
@@ -411,14 +411,14 @@ Why this issue exists and any relevant background.
 
 | I want to…                    | Claude Code                      | Copilot                          |
 | ----------------------------- | -------------------------------- | -------------------------------- |
-| Stress-test a design †        | `/grill-me`                      | `/grill-me`                      |
+| Stress-test a design †        | `/crew-grill`                    | `/crew-grill`                    |
 | Create a PRD †                | `/to-prd`                        | `/to-prd`                        |
 | Break PRD into issues †       | `/to-issues`                     | `/to-issues`                     |
-| Run an autonomous sprint      | `/afk-sprint`                    | `@afk-sprint`                    |
+| Run an autonomous sprint      | `/crew-afk`                      | `@crew-afk`                      |
 | Implement one issue manually  | `/solve-issue`                   | `/solve-issue`                   |
 | TDD style for current session | `/tdd`                           | `/tdd`                           |
 | Review sprint output          | automatic                        | automatic (`@code-reviewer`)     |
-| Triage code review            | `/address-code-review`           | `/address-code-review`           |
+| Triage code review            | `/crew-address-findings`         | `/crew-address-findings`         |
 | Handle PR feedback †          | `/address-pr-comments`           | `/address-pr-comments`           |
 | Improve architecture †        | `/improve-codebase-architecture` | `/improve-codebase-architecture` |
 
@@ -426,11 +426,11 @@ Why this issue exists and any relevant background.
 
 ### Platform comparison
 
-| Aspect               | Claude Code                                     | Copilot                    |
-| -------------------- | ----------------------------------------------- | -------------------------- |
-| Sprint execution     | Parallel (batches of ~8)                        | Sequential (one at a time) |
-| Issue isolation      | Git worktree per `coder` agent                  | Shared repo                |
-| Implement invocation | `/afk-sprint` (auto) or `/solve-issue` (manual) | `@afk-sprint` (auto)       |
-| Code review trigger  | Automatic at sprint end                         | Automatic at protocol exit |
-| Agent definitions    | `.claude/agents/`                               | `.github/agents/`          |
-| Skill definitions    | `.claude/skills/` (shared)                      | `.claude/skills/` (shared) |
+| Aspect               | Claude Code                                   | Copilot                    |
+| -------------------- | --------------------------------------------- | -------------------------- |
+| Sprint execution     | Parallel (batches of ~8)                      | Sequential (one at a time) |
+| Issue isolation      | Git worktree per `coder` agent                | Shared repo                |
+| Implement invocation | `/crew-afk` (auto) or `/solve-issue` (manual) | `@crew-afk` (auto)         |
+| Code review trigger  | Automatic at sprint end                       | Automatic at protocol exit |
+| Agent definitions    | `.claude/agents/`                             | `.github/agents/`          |
+| Skill definitions    | `.claude/skills/` (shared)                    | `.claude/skills/` (shared) |

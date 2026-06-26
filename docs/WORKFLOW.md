@@ -18,14 +18,14 @@ The sandbox gives your team a three-phase AI-assisted delivery loop:
  │  │  PLAN  (you)                                                       │  │
  │  │                                                                    │  │
  │  │  Create .scratch/*/issues/*.md                                     │  │
- │  │  (manually, or with optional /grill-me /to-prd /to-issues †)       │  │
+ │  │  (manually, or with optional planning skills †)                    │  │
  │  └───────────────────────────┬────────────────────────────────────────┘  │
  │                              │                                           │
  │                              ▼                                           │
  │  ┌────────────────────────────────────────────────────────────────────┐  │
  │  │  IMPLEMENT  (agents)                                               │  │
  │  │                                                                    │  │
- │  │  /afk-sprint  ◄── walk away; parallel coder agents per issue       │  │
+ │  │  /crew-afk  ◄── walk away; parallel coder agents per issue         │  │
  │  │  Each issue → isolated worktree → TDD → verify → commit → merge    │  │
  │  └───────────────────────────┬────────────────────────────────────────┘  │
  │                              │                                           │
@@ -34,7 +34,7 @@ The sandbox gives your team a three-phase AI-assisted delivery loop:
  │  │  REVIEW  (AI then you)                                             │  │
  │  │                                                                    │  │
  │  │  code-reviewer runs automatically ◄── CRITICAL/HIGH/MEDIUM/LOW     │  │
- │  │  /address-code-review  ◄── you triage findings and apply fixes     │  │
+ │  │  /crew-address-findings  ◄── you triage findings and apply fixes   │  │
  │  └───────────────────────────┬────────────────────────────────────────┘  │
  │                              │                                           │
  │                              ▼                                           │
@@ -43,7 +43,7 @@ The sandbox gives your team a three-phase AI-assisted delivery loop:
  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-† `/grill-me`, `/to-prd`, `/to-issues` are bundled in this template.
+† `/crew-grill`, `/crew-brainstorm`, `/to-prd`, `/to-issues` are bundled in this template.
 
 ---
 
@@ -112,22 +112,43 @@ See [Platform comparison](#platform-comparison) if you're unsure which to pick.
 
 Create issue files that describe what to build. Each issue file is a plain markdown file in `.scratch/`.
 
-**Using planning skills** (`/grill-me`, `/to-prd`, `/to-issues`):
+**Using planning skills:**
+
+Pick one entry point:
+
+|              | `/crew-grill`                                   | `/crew-brainstorm`                                               |
+| ------------ | ----------------------------------------------- | ---------------------------------------------------------------- |
+| **Use when** | You have a plan and want it stress-tested       | You have an idea and need to develop it into a design            |
+| **Input**    | A plan — including output from any AI plan mode | An idea, rough concept, or exploratory question                  |
+| **Produces** | decisions record (`design.md`) + PRD + issues   | Full design doc (`design.md`) + PRD + issues                     |
+| **Process**  | Relentless Q&A challenging every assumption     | Collaborative Q&A, approach proposals, section-by-section design |
+
+The `design.md` produced here is a decisions record — implementation agents read it to avoid reversing choices when hitting edge cases.
+
+Add `with docs` to also update `CONTEXT.md` and record ADRs:
+
+```
+/crew-grill with docs
+```
+
+Both flow into `/to-prd` and `/to-issues`:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                                                                         │
-│  > /grill-me       Agent asks hard questions about your design          │
-│    "I want to      until every edge case is covered.                    │
-│     add rate       (e.g. "What happens when tokens refill mid-burst?") │
+│  > /crew-grill       Stress-tests your plan with hard questions         │
+│    "I want to        until every edge case is covered.                  │
+│     add rate         (e.g. "What happens when tokens refill mid-burst?")│
 │     limiting"                                                           │
+│    OR                                                                   │
+│  > /crew-brainstorm  Develops a rough idea into a full design           │
 │                                                                         │
-│  > /to-prd         Formalises the conversation as a PRD at             │
+│  > /to-prd         Formalises the conversation as a PRD at              │
 │                    .scratch/rate-limiting/PRD.md                        │
 │                                                                         │
-│  > /to-issues      Breaks the PRD into numbered issue files at         │
+│  > /to-issues      Breaks the PRD into numbered issue files at          │
 │                    .scratch/rate-limiting/issues/                       │
-│                      01-token-bucket.md    ← Status: ready-for-agent   │
+│                      01-token-bucket.md    ← Status: ready-for-agent    │
 │                      02-middleware.md                                   │
 │                      03-integration-tests.md                            │
 │                                                                         │
@@ -167,11 +188,11 @@ We need per-client rate limiting at the API gateway layer.
 ### Claude Code
 
 ```
-> /afk-sprint
+> /crew-afk
 ```
 
 ```
-/afk-sprint (skill → workflow engine)
+/crew-afk (skill → workflow engine)
 │
 ├─ Phase: List
 │   └─ Scans .scratch/*/issues/*.md for "Status: ready-for-agent"
@@ -208,14 +229,24 @@ We need per-client rate limiting at the API gateway layer.
 
 Each `coder` agent runs in an **isolated git worktree** — they cannot interfere with each other.
 
+**Gitignored files in worktrees (`.worktreeinclude`)**
+
+Gitignored files like `.env` or `node_modules/` aren't present in worktrees by default. To make them available, create a `.worktreeinclude` at your repo root:
+
+```
+# .worktreeinclude
+.env
+.env.local
+```
+
 ### Copilot
 
 ```
-> @afk-sprint
+> @crew-afk
 ```
 
 ```
-@afk-sprint (agent — runs the loop itself)
+@crew-afk (agent — runs the loop itself)
 │
 ├─ Records HEAD SHA for review scope
 │
@@ -262,12 +293,12 @@ Blocked issues are automatically re-evaluated each round as their dependencies c
 The code-reviewer runs automatically at sprint end. After it finishes:
 
 ```
-> /address-code-review
+> /crew-address-findings
 ```
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  /address-code-review                                                    │
+│  /crew-address-findings                                                  │
 │                                                                          │
 │  1. Reads .scratch/reviews/sprint-review-<latest>.md                     │
 │                                                                          │
@@ -335,7 +366,7 @@ When you prefer to implement issues yourself, one at a time.
                                 ┌─────────────────┐
   OR: write directly  ────────► │ ready-for-agent │  Agent will pick this up
   with this status              └────────┬────────┘
-                               /afk-sprint or /solve-issue
+                               /crew-afk or /solve-issue
                                  ┌───────┴────────┐
                                  │                │
                                  ▼                ▼
@@ -353,29 +384,30 @@ When you prefer to implement issues yourself, one at a time.
 
 ## Skills vs agents — what is the difference?
 
-| Skills                                                                                                                              | Agents                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Instructions injected into the current conversation.                                                                                | Autonomous workers with their own isolated context window.                          |
-| Invoked with `/slash-command`.                                                                                                      | Spawned by skills (Claude) or invoked directly (Copilot).                           |
-| Shape how the AI thinks and responds right now.                                                                                     | Located in `.claude/agents/` (Claude) or `.github/agents/` (Copilot).               |
-| No separate process — no extra cost beyond the current session.                                                                     | Each has its own tools, model, and instructions.                                    |
-|                                                                                                                                     | Do the actual file editing, test running, and committing.                           |
-| **Bundled examples:**<br>• `/afk-sprint` → runs the sprint<br>• `/solve-issue` → implements 1 issue<br>• `/tdd` → shapes test style | **Examples:**<br>• `coder` → implements issues<br>• `code-reviewer` → reviews diffs |
+| Skills                                                                                                                                                                                                                                                                                                             | Agents                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Instructions injected into the current conversation.                                                                                                                                                                                                                                                               | Autonomous workers with their own isolated context window.                                    |
+| Invoked with `/slash-command`.                                                                                                                                                                                                                                                                                     | Spawned by skills (Claude) or invoked directly (Copilot).                                     |
+| Shape how the AI thinks and responds right now.                                                                                                                                                                                                                                                                    | Located in `.claude/agents/` (Claude) or `.github/agents/` (Copilot).                         |
+| No separate process — no extra cost beyond the current session.                                                                                                                                                                                                                                                    | Each has its own tools, model, and instructions.                                              |
+|                                                                                                                                                                                                                                                                                                                    | Do the actual file editing, test running, and committing.                                     |
+| **Bundled examples:**<br>• `/crew-afk` → runs the sprint<br>• `/crew-grill` or `/crew-brainstorm` → plan and design<br>• `/solve-issue` → implements 1 issue<br>• `/address-pr-comments` → implements PR review comments<br>• `/configure-tracker` → select issue tracker template<br>• `/tdd` → shapes test style | **Examples:**<br>• `crew-coder` → implements issues<br>• `crew-code-reviewer` → reviews diffs |
 
-> Note: `/afk-sprint` is a **skill** in the Claude sandbox (it drives the workflow engine). `@afk-sprint` in Copilot is an **agent** (it runs the sprint loop itself). Same name, different primitive on each platform.
+> Note: `/crew-afk` is a **skill** in the Claude sandbox (it drives the workflow engine). `@crew-afk` in Copilot is an **agent** (it runs the sprint loop itself). Same name, different primitive on each platform. `crew-coder` and `crew-code-reviewer` are the underlying agents that do the actual work.
 
 ---
 
 ## Platform comparison
 
-| Feature               | Claude Code                  | Copilot                                    |
-| --------------------- | ---------------------------- | ------------------------------------------ |
-| **Sprint model**      | Parallel (up to 8 at once)   | Sequential (one issue at a time)           |
-| **Issue isolation**   | Git worktree per coder agent | Shared repo (no isolation)                 |
-| **Sprint invocation** | `/afk-sprint` (skill)        | `@afk-sprint` (agent)                      |
-| **Manual invocation** | `/solve-issue`               | `/solve-issue` (via Claude in the sandbox) |
-| **Code review**       | Automatic at sprint end      | Automatic at protocol exit                 |
-| **Best for**          | Large sprints, 5+ issues     | Smaller loads, already in Copilot          |
+| Feature               | Claude Code                         | Copilot                                    |
+| --------------------- | ----------------------------------- | ------------------------------------------ |
+| **Sprint model**      | Parallel (up to 8 at once)          | Sequential (one issue at a time)           |
+| **Issue isolation**   | Git worktree per coder agent        | Shared repo (no isolation)                 |
+| **Planning**          | `/crew-grill` or `/crew-brainstorm` | `/crew-grill` or `/crew-brainstorm`        |
+| **Sprint invocation** | `/crew-afk` (skill)                 | `@crew-afk` (agent)                        |
+| **Manual invocation** | `/solve-issue`                      | `/solve-issue` (via Claude in the sandbox) |
+| **Code review**       | Automatic at sprint end             | Automatic at protocol exit                 |
+| **Best for**          | Large sprints, 5+ issues            | Smaller loads, already in Copilot          |
 
 ---
 
@@ -417,18 +449,18 @@ your-project/
 ```bash
 sbx-run claude-sbx
 # Write .scratch/<feature>/issues/01-*.md manually, set Status: ready-for-agent
-> /afk-sprint
+> /crew-afk
 ```
 
 ### Start a new feature (with planning skills)
 
 ```bash
 sbx-run claude-sbx
-> /grill-me
+> /crew-grill          # or /crew-brainstorm for a rough idea
 > "I want to add X to our API"
 > /to-prd
 > /to-issues
-> /afk-sprint
+> /crew-afk
 ```
 
 ### Re-run sprint after fixing blockers
@@ -436,7 +468,7 @@ sbx-run claude-sbx
 Resolve whatever was blocking an issue, then:
 
 ```
-> /afk-sprint
+> /crew-afk
 ```
 
 It re-scans from scratch and picks up any issues that are now unblocked.
@@ -459,15 +491,15 @@ Surfaces refactoring opportunities informed by your CONTEXT.md and ADRs.
 
 ## Troubleshooting
 
-| Symptom                                         | Likely cause                             | Fix                                                                        |
-| ----------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
-| Sprint picks up 0 issues                        | No `Status: ready-for-agent` files found | Check `.scratch/*/issues/*.md` — the status line must match exactly        |
-| Issue keeps re-running each round               | Worker left it `partial`                 | Read its `## Progress` section, resolve the blocker, then re-run           |
-| Sprint stalls after 2 rounds                    | All remaining issues are `blocked`       | Read each `## Blocked` section, resolve dependencies manually, then re-run |
-| `setup.sh` fails                                | Missing `.env` variable                  | Check `~/.sbx-kits/.env` — copy from `.env.example` and fill every required field |
-| `sbx-run` fails auth                        | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx-run`                |
-| Agent implements wrong thing                    | Issue acceptance criteria are ambiguous  | Rewrite criteria as testable bullet points, then re-run                    |
-| `/grill-me`, `/to-prd`, `/to-issues` do nothing | Command not typed correctly              | Type the command exactly — e.g. `/grill-me` at the start of a new line     |
+| Symptom                                                               | Likely cause                             | Fix                                                                               |
+| --------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| Sprint picks up 0 issues                                              | No `Status: ready-for-agent` files found | Check `.scratch/*/issues/*.md` — the status line must match exactly               |
+| Issue keeps re-running each round                                     | Worker left it `partial`                 | Read its `## Progress` section, resolve the blocker, then re-run                  |
+| Sprint stalls after 2 rounds                                          | All remaining issues are `blocked`       | Read each `## Blocked` section, resolve dependencies manually, then re-run        |
+| `setup.sh` fails                                                      | Missing `.env` variable                  | Check `~/.sbx-kits/.env` — copy from `.env.example` and fill every required field |
+| `sbx-run` fails auth                                                  | AWS SSO session expired                  | Run `aws sso login --profile sso-live` before `sbx-run`                           |
+| Agent implements wrong thing                                          | Issue acceptance criteria are ambiguous  | Rewrite criteria as testable bullet points, then re-run                           |
+| `/crew-grill`, `/crew-brainstorm`, `/to-prd`, `/to-issues` do nothing | Command not typed correctly              | Type the command exactly — e.g. `/crew-grill` at the start of a new line          |
 
 ---
 
