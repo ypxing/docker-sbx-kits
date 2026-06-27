@@ -102,6 +102,8 @@ Bootstraps the [coding-crew](https://github.com/ypxing/coding-crew) toolchain in
 
 **Includes RTK:** Both kits pre-install [rtk](https://github.com/rtk-ai/rtk), a CLI proxy that filters and compresses command outputs, saving 60-90% tokens. The agent automatically uses `rtk` to wrap shell commands, dramatically reducing token usage on verbose outputs like `git log`, `docker ps`, and test runs.
 
+**Includes CodeGraph:** Pre-installs [codegraph](https://github.com/colbymchenry/codegraph) for code intelligence and navigation, enabling fast semantic search and symbol lookup across your codebase.
+
 ```bash
 sbx-run claude-docker --kit claude-wk
 sbx-run copilot-docker --kit copilot-wk
