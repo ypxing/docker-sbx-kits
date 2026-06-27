@@ -17,5 +17,7 @@ commands:
     - command: |
         curl -fsSL https://raw.githubusercontent.com/ypxing/coding-crew/main/bootstrap.sh | bash -s -- copilot --version v1.8.6
         curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+        curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh
+        codegraph install --yes
       user: "1000"
       description: "Install coding-crew, rtk"
