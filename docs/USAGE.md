@@ -424,7 +424,53 @@ Why this issue exists and any relevant background.
 
 † Bundled in this template.
 
-### Platform comparison
+---
+
+## RTK Token Optimization
+
+Both `claude-wk` and `copilot-wk` kits include [rtk](https://github.com/rtk-ai/rtk), a CLI proxy that intelligently filters and compresses command outputs.
+
+### What is RTK?
+
+RTK wraps shell commands to remove noise and keep only the essential information. This saves 60-90% of tokens on verbose commands like:
+
+- `git status`, `git log` — strips formatting, keeps changed files and commit messages
+- `docker ps`, `kubectl get pods` — tabulates cleanly without ANSI codes
+- Test runners (`cargo test`, `npm test`) — shows failures + summary, hides passing test details
+- Build output — highlights errors/warnings, suppresses routine compilation logs
+
+### How it works
+
+When you run a sandbox with `--kit claude-wk` or `--kit copilot-wk`:
+
+1. RTK is automatically installed during sandbox setup
+2. Agent instructions include a rule to prefix shell commands with `rtk`
+3. The agent transparently wraps commands: `rtk git status` instead of `git status`
+4. You see the compressed output — the agent uses fewer tokens per command
+
+### Check your savings
+
+Inside the sandbox, run:
+
+```bash
+rtk gain              # See cumulative token savings
+rtk gain --history    # Per-command breakdown
+rtk discover          # Find commands you forgot to wrap
+```
+
+### When RTK is included
+
+| Kit          | RTK included? |
+| ------------ | ------------- |
+| `claude-wk`  | ✅ Yes        |
+| `copilot-wk` | ✅ Yes        |
+| Other kits   | ❌ No         |
+
+RTK is only bundled with the workflow kits because they're designed for intensive autonomous coding sessions where token usage matters most.
+
+---
+
+## Platform comparison
 
 | Aspect               | Claude Code                                   | Copilot                    |
 | -------------------- | --------------------------------------------- | -------------------------- |

@@ -100,6 +100,8 @@ echo $(security find-generic-password -s 'npm_token' -w) | sbx secret set -g npm
 
 Bootstraps the [coding-crew](https://github.com/ypxing/coding-crew) toolchain into the sandbox, giving the agent a pre-wired `/grill-me` workflow and the `/afk` autonomous coder.
 
+**Includes RTK:** Both kits pre-install [rtk](https://github.com/rtk-ai/rtk), a CLI proxy that filters and compresses command outputs, saving 60-90% tokens. The agent automatically uses `rtk` to wrap shell commands, dramatically reducing token usage on verbose outputs like `git log`, `docker ps`, and test runs.
+
 ```bash
 sbx-run claude-docker --kit claude-wk
 sbx-run copilot-docker --kit copilot-wk
